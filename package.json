@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@noble/curves": "^1.9.1",
+    "@noble/ed25519": "^2.2.3",
+    "cors": "^2.8.5",
+    "mysql2": "^3.14.1"
+  }
+}
