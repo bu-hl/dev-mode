@@ -51,7 +51,7 @@ function startSDK() {
 
 function upgradeCC() {
  # 체인코드 업그레이드
- docker exec cli scripts/upgradeCC.sh $1 $2
+ docker exec cli scripts/upgradeCC.sh $1 $2 $3
 }
 if [ "$1" == "generateCert" ]; then
  generateCert $2
