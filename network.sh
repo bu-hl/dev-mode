@@ -80,7 +80,7 @@ elif [ "$1" == "runCAOrg3" ]; then
 elif [ "$1" == "startSDK" ]; then
  startSDK
 elif [ "$1" == "upgradeCC" ]; then
- upgradeCC $2 $3
+ upgradeCC $2 $3 $4
 elif [ "$1" == "clean" ]; then
  cleanNetwork
 elif [ "$1" == "dev" ]; then
