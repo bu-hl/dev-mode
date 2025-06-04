@@ -3,13 +3,10 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 */
-
 const shim = require('fabric-shim');
 const crypto = require('crypto');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
-
-
 
 console.log('Starting VotingSystem.js...');
 
@@ -108,7 +105,6 @@ class VotingSystem {
     };
     return Buffer.from(JSON.stringify(response));
   }
-
 
   //유권자 등록 함수
   async registerVoter(stub, args) {
