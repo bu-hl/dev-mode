@@ -626,13 +626,13 @@
 
             candidatesList.innerHTML = candidatesHtml;
         }
-const voterRrn = prompt('주민등록번호 13자리를 입력하세요:');
- const voterName = prompt('투표자 이름을 입력하세요:');
+
         function confirmVote(candidateName) {
             if (!confirm(`정말로 '${candidateName}' 후보자에게 투표하시겠습니까?\n\n투표 후에는 변경할 수 없습니다.`)) {
                 return;
             }
-
+const voterRrn = prompt('주민등록번호 13자리를 입력하세요:');
+ const voterName = prompt('투표자 이름을 입력하세요:');
             // 투표 정보 입력 요청
            
             if (!voterName) return;
