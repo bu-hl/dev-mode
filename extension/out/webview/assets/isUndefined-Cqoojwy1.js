@@ -1,0 +1,1 @@
+function e(e){return e===void 0}var t=e;export{t as isUndefined_default};

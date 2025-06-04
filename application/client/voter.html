@@ -347,15 +347,22 @@
                     이름과 주민등록번호 뒷 7자리를 입력해주세요.
                 </div>
 
-                <div class="form-group">
-                    <label for="voterName">이름:</label>
-                    <input type="text" id="voterName" placeholder="실명을 입력하세요">
-                </div>
-                <div class="form-group">
-                    <label for="voterRrn">주민등록번호 뒷 7자리:</label>
-                    <input type="password" id="voterRrn" placeholder="1234567" maxlength="7">
-                </div>
-                <button class="btn" onclick="registerVoter()">유권자 등록</button>
+                <!-- 유권자 등록 폼 부분 수정 -->
+
+<div class="form-group">
+  <label for="voterName">이름:</label>
+  <input type="text" id="voterName" placeholder="실명을 입력하세요">
+</div>
+<div class="form-group">
+  <label for="voterRrn">주민등록번호 13자리:</label>
+  <input type="password" id="voterRrn" placeholder="1234561234567" maxlength="13">
+</div>
+<div class="form-group">
+  <label for="voterAddress">주소 (시/군/구):</label>
+  <input type="text" id="voterAddress" placeholder="예: 서울특별시 강남구">
+</div>
+<button class="btn" onclick="registerVoter()">유권자 등록</button>
+
                 <button class="btn btn-secondary" onclick="checkVoterStatus()">등록 상태 확인</button>
                 <div id="voterRegisterResult" class="result-box" style="display: none;"></div>
             </div>
@@ -504,37 +511,42 @@
                 });
         }
 
-        function registerVoter() {
-            const name = document.getElementById('voterName').value;
-            const rrn = document.getElementById('voterRrn').value;
 
-            if (!name || !rrn) {
-                showResult('voterRegisterResult', '이름과 주민등록번호 뒷 7자리를 모두 입력해주세요.', 'error');
-                return;
-            }
+  function registerVoter() {
+  const name = document.getElementById('voterName').value;
+  const rrn = document.getElementById('voterRrn').value;
+  const address = document.getElementById('voterAddress').value;
 
-            if (rrn.length !== 7) {
-                showResult('voterRegisterResult', '주민등록번호 뒷 7자리를 정확히 입력해주세요.', 'error');
-                return;
-            }
+  if (!name || !rrn || !address) {
+    showResult('voterRegisterResult', '이름, 주민등록번호 13자리, 주소(시/군/구)를 모두 입력해주세요.', 'error');
+    return;
+  }
 
-            fetch(`/voter/registerVoter?name=${encodeURIComponent(name)}&rrnSuffix=${encodeURIComponent(rrn)}`)
-                .then(response => response.json())
-                .then(data => {
-                    try {
-                        const result = safeParseResponse(data);
-                        showResult('voterRegisterResult', result.message || '유권자 등록이 완료되었습니다.', 'success');
-                        // 등록 후 현황 업데이트
-                        setTimeout(updateVotingStatus, 1000);
-                    } catch (error) {
-                        showResult('voterRegisterResult', error.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    showResult('voterRegisterResult', '등록 실패: ' + error.message, 'error');
-                });
+  if (rrn.length !== 13) {
+    showResult('voterRegisterResult', '주민등록번호는 13자리여야 합니다.', 'error');
+    return;
+  }
+
+  fetch('/voter/registerVoter', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, rrnFull: rrn, address })
+  })
+  .then(response => response.json())
+  .then(data => {
+    try {
+      const result = safeParseResponse(data);
+      showResult('voterRegisterResult', result.message || '유권자 등록이 완료되었습니다.', 'success');
+      setTimeout(updateVotingStatus, 1000);
+    } catch (error) {
+      showResult('voterRegisterResult', error.message, 'error');
+    }
+  })
+  .catch(error => {
+    showResult('voterRegisterResult', '등록 실패: ' + error.message, 'error');
+  });
         }
-
+            
         function checkVoterStatus() {
             const name = document.getElementById('voterName').value;
             const rrn = document.getElementById('voterRrn').value;
@@ -544,7 +556,7 @@
                 return;
             }
 
-            fetch(`/voter/getVoterInfo?voterName=${encodeURIComponent(name)}&rrnSuffix=${encodeURIComponent(rrn)}`)
+            fetch(`/voter/getVoterInfo?voterName=${encodeURIComponent(name)}&rrnFull=${encodeURIComponent(rrn)}`)
                 .then(response => response.json())
                 .then(data => {
                     try {
@@ -614,19 +626,20 @@
 
             candidatesList.innerHTML = candidatesHtml;
         }
-
+const voterRrn = prompt('주민등록번호 13자리를 입력하세요:');
+ const voterName = prompt('투표자 이름을 입력하세요:');
         function confirmVote(candidateName) {
             if (!confirm(`정말로 '${candidateName}' 후보자에게 투표하시겠습니까?\n\n투표 후에는 변경할 수 없습니다.`)) {
                 return;
             }
 
             // 투표 정보 입력 요청
-            const voterName = prompt('투표자 이름을 입력하세요:');
+           
             if (!voterName) return;
 
-            const voterRrn = prompt('주민등록번호 뒷 7자리를 입력하세요:');
-            if (!voterRrn || voterRrn.length !== 7) {
-                alert('주민등록번호 뒷 7자리를 정확히 입력해주세요.');
+            
+            if (!voterRrn || voterRrn.length !== 13) {
+                alert('주민등록번호 뒷 13자리를 정확히 입력해주세요.');
                 return;
             }
 
@@ -635,7 +648,7 @@
         }
 
         function castVote(voterName, voterRrn, candidateName) {
-            fetch(`/voter/vote?voterName=${encodeURIComponent(voterName)}&rrnSuffix=${encodeURIComponent(voterRrn)}&candidateName=${encodeURIComponent(candidateName)}`)
+            fetch(`/voter/vote?voterName=${encodeURIComponent(voterName)}&rrnFull=${encodeURIComponent(voterRrn)}&candidateName=${encodeURIComponent(candidateName)}`)
                 .then(response => response.json())
                 .then(data => {
                     try {
@@ -655,15 +668,13 @@
         }
 
         function checkMyVoteInfo() {
-            const name = document.getElementById('checkName').value;
-            const rrn = document.getElementById('checkRrn').value;
 
-            if (!name || !rrn) {
+            if (!voterName|| !voterRrn ) {
                 showResult('myVoteResult', '이름과 주민등록번호 뒷 7자리를 입력해주세요.', 'error');
                 return;
             }
 
-            fetch(`/voter/getVoterInfo?voterName=${encodeURIComponent(name)}&rrnSuffix=${encodeURIComponent(rrn)}`)
+            fetch(`/voter/getVoterInfo?voterName=${encodeURIComponent(name)}&rrnFull=${encodeURIComponent(rrn)}`)
                 .then(response => response.json())
                 .then(data => {
                     try {

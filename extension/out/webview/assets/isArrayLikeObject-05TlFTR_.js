@@ -1,0 +1,1 @@
+import{_overRest_default as e,_setToString_default as t,identity_default as n,isArrayLike_default as r,isObjectLike_default as i}from"./focus-trap-CSSWZImT.js";function a(r,i){return t(e(r,i,n),r+``)}var o=a;function s(e){return i(e)&&r(e)}var c=s;export{o as _baseRest_default,c as isArrayLikeObject_default};

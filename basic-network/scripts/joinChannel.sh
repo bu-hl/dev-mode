@@ -103,8 +103,6 @@ function updateAnchor() {
    --tls \
    --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
 }
-
-
 function updateAnchorOrg2() {
  echo "업데이트 앵커피어 peer0 Org2"
  if [ ! -d anchor ] ; then
@@ -179,3 +177,5 @@ else
  echo -n "unknown parameter"
  exit 1
 fi
+
+

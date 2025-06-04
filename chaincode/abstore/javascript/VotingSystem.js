@@ -6,6 +6,10 @@
 
 const shim = require('fabric-shim');
 const crypto = require('crypto');
+const mysql = require('mysql2/promise');
+const bcrypt = require('bcrypt');
+
+
 
 console.log('Starting VotingSystem.js...');
 
@@ -14,7 +18,7 @@ class VotingSystem {
   async Init(stub) {
     console.info('Init called - using alternative approach');
     // 아무것도 하지 않고 undefined 반환 (fabric-shim이 자동 처리)
-    return;
+    return shim.success();
   }
 
   // Init 대신 일반 함수로 초기화 처리

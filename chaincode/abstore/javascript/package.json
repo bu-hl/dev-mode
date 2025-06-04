@@ -1,18 +1,20 @@
 {
-	"name": "vote",
-	"version": "1.0.0",
-	"description": "vote chaincode implemented in node.js",
-	"engines": {
-		"node": ">=8.4.0",
-		"npm": ">=5.3.0"
-	},
-	"scripts": {
-		"start": "node VotingSystem.js"
-	},
-	"engine-strict": true,
-	"license": "Apache-2.0",
-	"dependencies": {
-		"fabric-shim": "^2.0.0",
-		"crypto": "^1.0.1"
-	}
+   "name": "abstore",
+   "version": "1.0.0",
+   "description": "vote chaincode implemented in node.js",
+   "main": "VotingSystem.js",
+   "engines": {
+      "node": ">=8.4.0",
+      "npm": ">=5.3.0"
+   },
+   "scripts": {
+      "start": "node VotingSystem.js"
+   },
+   "engine-strict": true,
+   "license": "Apache-2.0",
+   "dependencies": {
+      "bcrypt": "^6.0.0",
+      "fabric-shim": "^2.5.8",
+      "mysql2": "^3.14.1"
+   }
 }

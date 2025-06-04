@@ -3,14 +3,35 @@ const cors = require('cors');
 const app = express();
 const path = require('path');
 const sdk = require('./sdk');
+const mysql = require('mysql2');
+const crypto = require('crypto');
+app.use(express.json()); // application/json 타입 요청 파싱
+app.use(express.urlencoded({ extended: true })); // application/x-www-form-urlencoded 타입 요청 파싱
+
+
 const PORT = 8001;
 const HOST = '0.0.0.0';
 
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
 
 const ADMIN_PASSWORD = 'admin123';
+
+// -------------------- MySQL 설정 --------------------
+
+const voting_app = {
+  host: 'localhost',
+  user: 'root',
+  password: '1111',
+  database: 'voting_app',
+  charset: 'utf8mb4'
+};
+
+// SHA-256 해시 함수 (입력 문자열 → 16진수 해시)
+function sha256(data) {
+  return crypto.createHash('sha256').update(data).digest('hex');
+}
+
 
 // 간단한 관리자 인증 (실제 환경에서는 더 강력한 인증 시스템 필요)
 
@@ -25,7 +46,7 @@ function authenticateAdmin(req, res, next) {
     }
     next();
 }
-
+4
 // ============ 관리자 전용 API ============
 
 // Initialize the voting system (Admin only)
@@ -33,7 +54,6 @@ app.get('/admin/init', authenticateAdmin, function (req, res) {
     let args = [];
     sdk.send(false, 'initializeVotingSystem', args, res);
 });
-
 
 // Register a candidate (Admin only)
 app.get('/admin/registerCandidate', authenticateAdmin, function (req, res) {
@@ -68,61 +88,79 @@ app.get('/admin/getAllCandidates', authenticateAdmin, function (req, res) {
 });
 
 // Get candidate information (Admin only)
-app.get('/admin/getCandidateInfo', authenticateAdmin, function (req, res) {
-    let candidateId = req.query.candidateId;
-    if (!candidateId) {
-        return res.status(400).json({ error: 'candidateId는 필수입니다.' });
-    }
-    let args = [candidateId];
-    sdk.send(true, 'getCandidateInfo', args, res);
-});
+// JSON 바디 파싱 미들웨어는 서버 초기 설정에 반드시 포함되어 있어야 합니다:
 
-// ============ 투표자 전용 API ============
+app.post('/voter/registerVoter', async function(req, res, next) {
+  try {
+    // JSON 바디에서 값 받기
+    const { name, rrnFull, address } = req.body;
 
-// Register a voter
-app.get('/voter/registerVoter', function (req, res) {
-    let name = req.query.name;
-    let rrnSuffix = req.query.rrnSuffix;
-    
-    if (!name || !rrnSuffix) {
-        return res.status(400).json({ error: 'name과 rrnSuffix는 필수입니다.' });
+    // 입력 검증
+    if (!name || !rrnFull || !address) {
+      return res.status(400).json({ error: 'name, rrnFull, address는 필수입니다.' });
     }
-    
-    const args = [name, rrnSuffix];
-    sdk.send(false, 'registerVoter', args, res);
+    if (rrnFull.length !== 13) {
+      return res.status(400).json({ error: '주민등록번호는 13자리여야 합니다.' });
+    }
+
+    // SHA-256 해시 생성
+    const nameHash = sha256(name);
+    const ssnHash = sha256(rrnFull);
+    const addressHash = sha256(address);
+
+    // MySQL 연결 및 저장
+    const connection = await mysql.createConnection(voting_app);
+    const insertQuery = `
+      INSERT INTO voters (name_hash, ssn_hash, address_hash)
+      VALUES (?, ?, ?)
+    `;
+    await connection.execute(insertQuery, [nameHash, ssnHash, addressHash]);
+    await connection.end();
+
+    // Fabric 체인코드 호출
+    const args = [name, rrnFull];
+    await sdk.send(false, 'registerVoter', args, res);
+
+  } catch (err) {
+    console.error('유권자 등록 중 에러:', err);
+    return res.status(500).json({
+      error: '유권자 등록 중 서버 오류가 발생했습니다.',
+      detail: err.message,
+    });
+  }
 });
 
 // Cast a vote
-app.get('/voter/vote', function (req, res) {
-    const voterName = req.query.voterName;
-    const rrnSuffix = req.query.rrnSuffix;
-    const candidateName = req.query.candidateName;
-    
-    if (!voterName || !rrnSuffix || !candidateName) {
-        return res.status(400).json({ error: 'voterName, rrnSuffix, candidateName는 필수입니다.' });
-    }
-    
-    const args = [voterName, rrnSuffix, candidateName];
-    sdk.send(false, 'vote', args, res);
+app.post('/voter/vote', function (req, res) {
+  const voterName = req.query.voterName;
+  const rrnFull = req.query.rrnFull;
+  const candidateName = req.query.candidateName;
+  
+  if (!voterName || !rrnFull || !candidateName) {
+    return res.status(400).json({ error: 'voterName, rrnFull, candidateName는 필수입니다.' });
+  }
+  
+  const args = [voterName, rrnFull, candidateName];
+  sdk.send(false, 'vote', args, res);
 });
 
 // Get voter information
 app.get('/voter/getVoterInfo', function (req, res) {
-    const voterName = req.query.voterName;
-    const rrnSuffix = req.query.rrnSuffix;
-    
-    if (!voterName || !rrnSuffix) {
-        return res.status(400).json({ error: 'voterName과 rrnSuffix는 필수입니다.' });
-    }
-    
-    const args = [voterName, rrnSuffix];
-    sdk.send(true, 'getVoterInfo', args, res);
+  const voterName = req.query.voterName;
+  const rrnFull = req.query.rrnFull;
+  
+  if (!voterName || !rrnFull) {
+    return res.status(400).json({ error: 'voterName과 rrnFull는 필수입니다.' });
+  }
+  
+  const args = [voterName, rrnFull];
+  sdk.send(true, 'getVoterInfo', args, res);
 });
 
 // Get available candidates for voting (투표자가 볼 수 있는 후보자 목록)
 app.get('/voter/getCandidates', function (req, res) {
-    let args = [];
-    sdk.send(true, 'getAllCandidates', args, res);
+  let args = [];
+  sdk.send(true, 'getAllCandidates', args, res);
 });
 
 // ============ 공통 API ============
