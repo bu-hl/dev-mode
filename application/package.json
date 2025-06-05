@@ -1,7 +1,6 @@
 {
-  "name": "application",
+  "name": "dev-mode",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,8 +8,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^5.1.0",
+    "cors": "^2.8.5",
+    "express": "^4.16.4",
     "fabric-ca-client": "^2.2.9",
     "fabric-network": "^2.2.9"
-  }
+  },
+  "description": ""
 }

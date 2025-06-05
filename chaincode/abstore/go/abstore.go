@@ -1,25 +1,8 @@
-/*
-Copyright IBM Corp. 2016 All Rights Reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-		 http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package main
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
-	"strconv"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
@@ -28,148 +11,193 @@ import (
 type ABstore struct {
 	contractapi.Contract
 }
-var Admin = "Admin"
 
-func (t *ABstore) Init(ctx contractapi.TransactionContextInterface, A string, Aval int, B string, Bval int) error {
-	fmt.Println("ABstore Init")
-	var err error
-	// Initialize the chaincode
-	fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)
-	// Write the state to the ledger
-	err = ctx.GetStub().PutState(A, []byte(strconv.Itoa(Aval)))
-	if err != nil {
-		return err
+// User 구조체
+type User struct {
+	Name    string `json:"name"`
+	Balance int    `json:"balance"`
+}
+
+// Car 구조체
+type Car struct {
+	CarID   string   `json:"carId"`
+	Records []string `json:"records"`
+}
+
+// AddCar - 차량 등록
+func (t *ABstore) AddCar(ctx contractapi.TransactionContextInterface, carID string) error {
+	car := Car{
+		CarID:   carID,
+		Records: []string{},
 	}
 
-	err = ctx.GetStub().PutState(B, []byte(strconv.Itoa(Bval)))
+	carJSON, err := json.Marshal(car)
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to marshal car data: %s", err)
 	}
 
-	err = ctx.GetStub().PutState(Admin, []byte("0"))
+	err = ctx.GetStub().PutState(carID, carJSON)
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to add car: %s", err)
 	}
 
 	return nil
 }
 
-// Transaction makes payment of X units from A to B
-func (t *ABstore) Invoke(ctx contractapi.TransactionContextInterface, A, B string, X int) error {
-	var err error
-	var Aval int
-	var Bval int
-	var Adminval int
-	// Get the state from the ledger
-	// TODO: will be nice to have a GetAllState call to ledger
-	Avalbytes, err := ctx.GetStub().GetState(A)
+func (t *ABstore) GetCar(ctx contractapi.TransactionContextInterface, carID string) (string, error) {
+	carBytes, err := ctx.GetStub().GetState(carID)
 	if err != nil {
-		return fmt.Errorf("Failed to get state")
-	}
-	if Avalbytes == nil {
-		return fmt.Errorf("Entity not found")
-	}
-	Aval, _ = strconv.Atoi(string(Avalbytes))
-
-	Bvalbytes, err := ctx.GetStub().GetState(B)
-	if err != nil {
-		return fmt.Errorf("Failed to get state")
-	}
-	if Bvalbytes == nil {
-		return fmt.Errorf("Entity not found")
-	}
-	Bval, _ = strconv.Atoi(string(Bvalbytes))
-
-	Adminvalbytes, err := ctx.GetStub().GetState(Admin)
-	if err != nil {
-		return fmt.Errorf("Failed to get state")
-	}
-	if Adminvalbytes == nil {
-		return fmt.Errorf("Entity not found")
-	}
-	Adminval, _ = strconv.Atoi(string(Adminvalbytes))
-
-	// Perform the execution
-	Aval = Aval - X
-	Bval = Bval + ( X - X / 10 )
-	Adminval = Adminval + ( X / 10)
-	fmt.Printf("Aval = %d, Bval = %d Adminval = %d\n", Aval, Bval, Adminval)
-
-	// Write the state back to the ledger
-	err = ctx.GetStub().PutState(A, []byte(strconv.Itoa(Aval)))
-	if err != nil {
-		return err
+		return "", fmt.Errorf("Failed to get car: %s", err)
 	}
 
-	err = ctx.GetStub().PutState(B, []byte(strconv.Itoa(Bval)))
-	if err != nil {
-		return err
+	if carBytes == nil {
+		return "", fmt.Errorf("Car not found")
 	}
 
-	err = ctx.GetStub().PutState(Admin, []byte(strconv.Itoa(Adminval)))
+	return string(carBytes), nil
+}
+
+// AddCarRecord - 차량 수리 기록 등록
+func (t *ABstore) AddCarRecord(ctx contractapi.TransactionContextInterface, carID string, record string) error {
+	carBytes, err := ctx.GetStub().GetState(carID)
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to get car: %s", err)
+	}
+
+	if carBytes == nil {
+		return fmt.Errorf("Car not found")
+	}
+
+	var car Car
+	err = json.Unmarshal(carBytes, &car)
+	if err != nil {
+		return fmt.Errorf("Failed to unmarshal car data: %s", err)
+	}
+
+	// Record 추가
+	car.Records = append(car.Records, record)
+
+	// 갱신된 Car 구조체 저장
+	carJSON, err := json.Marshal(car)
+	if err != nil {
+		return fmt.Errorf("Failed to marshal car data: %s", err)
+	}
+
+	err = ctx.GetStub().PutState(carID, carJSON)
+	if err != nil {
+		return fmt.Errorf("Failed to update car record: %s", err)
 	}
 
 	return nil
 }
 
-// Delete  an entity from state
-func (t *ABstore) Delete(ctx contractapi.TransactionContextInterface, A string) error {
-
-	// Delete the key from the state in ledger
-	err := ctx.GetStub().DelState(A)
+// ReceivePoints - 포인트 수령
+func (t *ABstore) ReceivePoints(ctx contractapi.TransactionContextInterface, user string, points int) error {
+	userBytes, err := ctx.GetStub().GetState(user)
 	if err != nil {
-		return fmt.Errorf("Failed to delete state")
+		return fmt.Errorf("Failed to get user: %s", err)
+	}
+
+	var usr User
+
+	if userBytes == nil {
+		usr = User{Name: user, Balance: points}
+	} else {
+		err = json.Unmarshal(userBytes, &usr)
+		if err != nil {
+			return fmt.Errorf("Failed to unmarshal user data: %s", err)
+		}
+		usr.Balance += points
+	}
+
+	userJSON, err := json.Marshal(usr)
+	if err != nil {
+		return fmt.Errorf("Failed to marshal user data: %s", err)
+	}
+
+	err = ctx.GetStub().PutState(user, userJSON)
+	if err != nil {
+		return fmt.Errorf("Failed to update user balance: %s", err)
 	}
 
 	return nil
 }
 
-// Query callback representing the query of a chaincode
-func (t *ABstore) Query(ctx contractapi.TransactionContextInterface, A string) (string, error) {
-	var err error
-	// Get the state from the ledger
-	Avalbytes, err := ctx.GetStub().GetState(A)
+// PayPoints - 포인트 사용
+func (t *ABstore) PayPoints(ctx contractapi.TransactionContextInterface, user string, points int) error {
+	userBytes, err := ctx.GetStub().GetState(user)
 	if err != nil {
-		jsonResp := "{\"Error\":\"Failed to get state for " + A + "\"}"
-		return "", errors.New(jsonResp)
+		return fmt.Errorf("Failed to get user: %s", err)
 	}
 
-	if Avalbytes == nil {
-		jsonResp := "{\"Error\":\"Nil amount for " + A + "\"}"
-		return "", errors.New(jsonResp)
+	if userBytes == nil {
+		return fmt.Errorf("User not found")
 	}
 
-	jsonResp := "{\"Name\":\"" + A + "\",\"Amount\":\"" + string(Avalbytes) + "\"}"
-	fmt.Printf("Query Response:%s\n", jsonResp)
-	return string(Avalbytes), nil
+	var usr User
+	err = json.Unmarshal(userBytes, &usr)
+	if err != nil {
+		return fmt.Errorf("Failed to unmarshal user data: %s", err)
+	}
+
+	if usr.Balance < points {
+		return fmt.Errorf("Insufficient points")
+	}
+
+	usr.Balance -= points
+
+	userJSON, err := json.Marshal(usr)
+	if err != nil {
+		return fmt.Errorf("Failed to marshal user data: %s", err)
+	}
+
+	err = ctx.GetStub().PutState(user, userJSON)
+	if err != nil {
+		return fmt.Errorf("Failed to update user balance: %s", err)
+	}
+
+	return nil
 }
 
-func (t *ABstore) GetAllQuery(ctx contractapi.TransactionContextInterface) ([]string, error) {
-    resultsIterator, err := ctx.GetStub().GetStateByRange("", "")
-    if err != nil {
-        return nil, err
-    }
-    defer resultsIterator.Close()
-    var wallet []string
-    for resultsIterator.HasNext() {
-        queryResponse, err := resultsIterator.Next()
-        if err != nil {
-            return nil, err
-        }
-        jsonResp := "{\"Name\":\"" + string(queryResponse.Key) + "\",\"Amount\":\"" + string(queryResponse.Value) + "\"}"
-        wallet = append(wallet, jsonResp)
-    }
-    return wallet, nil
+func (t *ABstore) CreateUser(ctx contractapi.TransactionContextInterface, userID string, name string) error {
+	user := User{
+		Name:    name,
+		Balance: 0,
+	}
+
+	userJSON, err := json.Marshal(user)
+	if err != nil {
+		return fmt.Errorf("Failed to marshal user data: %s", err)
+	}
+
+	err = ctx.GetStub().PutState(userID, userJSON)
+	if err != nil {
+		return fmt.Errorf("Failed to create user: %s", err)
+	}
+
+	return nil
 }
 
+// GetUser - 사용자 조회
+func (t *ABstore) GetUser(ctx contractapi.TransactionContextInterface, userID string) (string, error) {
+	userBytes, err := ctx.GetStub().GetState(userID)
+	if err != nil {
+		return "", fmt.Errorf("Failed to get user: %s", err)
+	}
+
+	if userBytes == nil {
+		return "", fmt.Errorf("User not found")
+	}
+
+	return string(userBytes), nil
+}
 
 func main() {
 	cc, err := contractapi.NewChaincode(new(ABstore))
 	if err != nil {
 		panic(err.Error())
 	}
+
 	if err := cc.Start(); err != nil {
 		fmt.Printf("Error starting ABstore chaincode: %s", err)
 	}
