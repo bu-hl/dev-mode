@@ -20,7 +20,6 @@ function dev() {
   echo "Org1 peer0 체인코드 설치"
   peer lifecycle chaincode install ${1}.tar.gz
   sleep 2
-
   ## 체인코드 패키지 이름 환경변수 지정
   peer lifecycle chaincode queryinstalled >&log.txt
   export PACKAGE_ID=`sed -n '/Package/{s/^Package ID: //; s/, Label:.*$//; $p;}' log.txt`
@@ -81,7 +80,7 @@ function prod() {
   peer lifecycle chaincode package $1.tar.gz \
   --path ./chaincode/${1}/javascript/ \
   --lang node \
-  --label ${1}_1
+  --label ${1}_2
 
   ## Peer0 Org1 체인코드 설치
   echo "Org1 peer0 체인코드 설치"
@@ -92,6 +91,7 @@ function prod() {
   echo "Org1 peer1 체인코드 설치"
   export CORE_PEER_TLS_ENABLED=true
   export CORE_PEER_LOCALMSPID="Org1MSP"
+
   export CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/tls/ca.crt
   export CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
   export CORE_PEER_ADDRESS=peer1.org1.example.com:8051
@@ -107,7 +107,6 @@ function prod() {
   export CORE_PEER_ADDRESS=peer0.org2.example.com:9051
   peer lifecycle chaincode install ${1}.tar.gz
   sleep 2
-
   ## Peer1 Org2 체인코드 설치
   echo "Org2 peer1 체인코드 설치"
   export CORE_PEER_TLS_ENABLED=true
@@ -127,6 +126,7 @@ function prod() {
   echo "Org1 peer0 체인코드 승인"
   export CORE_PEER_TLS_ENABLED=true
   export CORE_PEER_LOCALMSPID="Org1MSP"
+
   export CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
   export CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
   export CORE_PEER_ADDRESS=peer0.org1.example.com:7051
@@ -144,6 +144,7 @@ function prod() {
   echo "Org2 peer0 체인코드 승인"
   export CORE_PEER_TLS_ENABLED=true
   export CORE_PEER_LOCALMSPID="Org2MSP"
+
   export CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt
   export CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp
   export CORE_PEER_ADDRESS=peer0.org2.example.com:9051
@@ -157,6 +158,7 @@ function prod() {
     --version 1 \
     --package-id $PACKAGE_ID \
     --sequence 1 NA NA NA
+
 
   peer lifecycle chaincode checkcommitreadiness \
     -o orderer.example.com:7050 \
@@ -174,6 +176,7 @@ function prod() {
   export CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
   export CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
   export CORE_PEER_ADDRESS=peer0.org1.example.com:7051
+
   peer lifecycle chaincode commit \
   -o orderer.example.com:7050 \
   --ordererTLSHostnameOverride orderer.example.com \
@@ -197,3 +200,5 @@ else
  echo -n "unknown parameter"
  exit 1
 fi
+
+
