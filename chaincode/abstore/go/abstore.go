@@ -7,189 +7,192 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-// ABstore Chaincode implementation
+// NFT 구조체 정의
+type NFT struct {
+	TokenID  string `json:"tokenId"`
+	Owner    string `json:"owner"`
+	Metadata string `json:"metadata"`
+	Price    int    `json:"price"`
+	ForSale  bool   `json:"forSale"`
+	Bidder   string `json:"bidder,omitempty"`
+	BidPrice int    `json:"bidPrice,omitempty"`
+}
+
+// ABstore 스마트 컨트랙트
 type ABstore struct {
 	contractapi.Contract
 }
 
-// User 구조체
-type User struct {
-	Name    string `json:"name"`
-	Balance int    `json:"balance"`
+// NFT 여부확인
+func (s *ABstore) NFTExists(ctx contractapi.TransactionContextInterface, tokenId string) (bool, error) {
+	nftBytes, err := ctx.GetStub().GetState(tokenId)
+	if err != nil {
+		return false, fmt.Errorf("GetState 실패: %v", err)
+	}
+	return nftBytes != nil, nil
 }
 
-// Car 구조체
-type Car struct {
-	CarID   string   `json:"carId"`
-	Records []string `json:"records"`
+func (s *ABstore) MintNFT(ctx contractapi.TransactionContextInterface, tokenId, owner, metadata string, price int) error {
+	exists, err := s.NFTExists(ctx, tokenId)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return fmt.Errorf("NFT %s 이미 존재합니다", tokenId)
+	}
+
+	nft := NFT{
+		TokenID:  tokenId,
+		Owner:    owner,
+		Metadata: metadata,
+		Price:    price,
+		ForSale:  false,
+	}
+
+	nftBytes, err := json.Marshal(nft)
+	if err != nil {
+		return fmt.Errorf("JSON 직렬화 실패: %v", err)
+	}
+
+	return ctx.GetStub().PutState(tokenId, nftBytes)
 }
 
-// AddCar - 차량 등록
-func (t *ABstore) AddCar(ctx contractapi.TransactionContextInterface, carID string) error {
-	car := Car{
-		CarID:   carID,
-		Records: []string{},
-	}
-
-	carJSON, err := json.Marshal(car)
+func (s *ABstore) ReadNFT(ctx contractapi.TransactionContextInterface, tokenId string) (*NFT, error) {
+	nftBytes, err := ctx.GetStub().GetState(tokenId)
 	if err != nil {
-		return fmt.Errorf("Failed to marshal car data: %s", err)
+		return nil, fmt.Errorf("조회 실패: %v", err)
+	}
+	if nftBytes == nil {
+		return nil, fmt.Errorf("NFT %s 존재하지 않음", tokenId)
 	}
 
-	err = ctx.GetStub().PutState(carID, carJSON)
+	var nft NFT
+	err = json.Unmarshal(nftBytes, &nft)
 	if err != nil {
-		return fmt.Errorf("Failed to add car: %s", err)
+		return nil, fmt.Errorf("JSON 파싱 실패: %v", err)
 	}
 
-	return nil
+	return &nft, nil
 }
 
-func (t *ABstore) GetCar(ctx contractapi.TransactionContextInterface, carID string) (string, error) {
-	carBytes, err := ctx.GetStub().GetState(carID)
+func (s *ABstore) TransferNFT(ctx contractapi.TransactionContextInterface, tokenId, newOwner string) error {
+	nft, err := s.ReadNFT(ctx, tokenId)
 	if err != nil {
-		return "", fmt.Errorf("Failed to get car: %s", err)
+		return err
 	}
 
-	if carBytes == nil {
-		return "", fmt.Errorf("Car not found")
+	nft.Owner = newOwner
+	nft.ForSale = false
+	nft.Bidder = ""
+	nft.BidPrice = 0
+
+	nftBytes, err := json.Marshal(nft)
+	if err != nil {
+		return fmt.Errorf("JSON 직렬화 실패: %v", err)
 	}
 
-	return string(carBytes), nil
+	return ctx.GetStub().PutState(tokenId, nftBytes)
 }
 
-// AddCarRecord - 차량 수리 기록 등록
-func (t *ABstore) AddCarRecord(ctx contractapi.TransactionContextInterface, carID string, record string) error {
-	carBytes, err := ctx.GetStub().GetState(carID)
+func (s *ABstore) ListForSale(ctx contractapi.TransactionContextInterface, tokenId string, price int) error {
+	nft, err := s.ReadNFT(ctx, tokenId)
 	if err != nil {
-		return fmt.Errorf("Failed to get car: %s", err)
+		return err
 	}
 
-	if carBytes == nil {
-		return fmt.Errorf("Car not found")
-	}
+	nft.ForSale = true
+	nft.Price = price
 
-	var car Car
-	err = json.Unmarshal(carBytes, &car)
+	nftBytes, err := json.Marshal(nft)
 	if err != nil {
-		return fmt.Errorf("Failed to unmarshal car data: %s", err)
+		return err
 	}
 
-	// Record 추가
-	car.Records = append(car.Records, record)
-
-	// 갱신된 Car 구조체 저장
-	carJSON, err := json.Marshal(car)
-	if err != nil {
-		return fmt.Errorf("Failed to marshal car data: %s", err)
-	}
-
-	err = ctx.GetStub().PutState(carID, carJSON)
-	if err != nil {
-		return fmt.Errorf("Failed to update car record: %s", err)
-	}
-
-	return nil
+	return ctx.GetStub().PutState(tokenId, nftBytes)
 }
 
-// ReceivePoints - 포인트 수령
-func (t *ABstore) ReceivePoints(ctx contractapi.TransactionContextInterface, user string, points int) error {
-	userBytes, err := ctx.GetStub().GetState(user)
+func (s *ABstore) BuyNFT(ctx contractapi.TransactionContextInterface, tokenId, buyer string) error {
+	nft, err := s.ReadNFT(ctx, tokenId)
 	if err != nil {
-		return fmt.Errorf("Failed to get user: %s", err)
+		return err
 	}
 
-	var usr User
+	if !nft.ForSale {
+		return fmt.Errorf("NFT %s는 판매중이 아닙니다", tokenId)
+	}
 
-	if userBytes == nil {
-		usr = User{Name: user, Balance: points}
-	} else {
-		err = json.Unmarshal(userBytes, &usr)
+	nft.Owner = buyer
+	nft.ForSale = false
+
+	nftBytes, err := json.Marshal(nft)
+	if err != nil {
+		return err
+	}
+
+	return ctx.GetStub().PutState(tokenId, nftBytes)
+}
+
+func (s *ABstore) PlaceBid(ctx contractapi.TransactionContextInterface, tokenId string, bidder string, bidPrice int) error {
+	nft, err := s.ReadNFT(ctx, tokenId)
+	if err != nil {
+		return err
+	}
+
+	if !nft.ForSale {
+		return fmt.Errorf("NFT %s는 경매 중이 아닙니다", tokenId)
+	}
+
+	if bidPrice <= nft.BidPrice {
+		return fmt.Errorf("제시 가격이 현재 입찰가보다 낮습니다")
+	}
+
+	nft.Bidder = bidder
+	nft.BidPrice = bidPrice
+
+	nftBytes, err := json.Marshal(nft)
+	if err != nil {
+		return err
+	}
+
+	return ctx.GetStub().PutState(tokenId, nftBytes)
+}
+
+func (s *ABstore) AcceptBid(ctx contractapi.TransactionContextInterface, tokenId string) error {
+	nft, err := s.ReadNFT(ctx, tokenId)
+	if err != nil {
+		return err
+	}
+
+	if nft.Bidder == "" || nft.BidPrice <= 0 {
+		return fmt.Errorf("유효한 입찰이 없습니다")
+	}
+
+	return s.TransferNFT(ctx, tokenId, nft.Bidder)
+}
+
+func (s *ABstore) GetAllNFTs(ctx contractapi.TransactionContextInterface) ([]*NFT, error) {
+	resultsIterator, err := ctx.GetStub().GetStateByRange("", "")
+	if err != nil {
+		return nil, fmt.Errorf("조회 실패: %v", err)
+	}
+	defer resultsIterator.Close()
+
+	var nfts []*NFT
+	for resultsIterator.HasNext() {
+		queryResult, err := resultsIterator.Next()
 		if err != nil {
-			return fmt.Errorf("Failed to unmarshal user data: %s", err)
+			return nil, err
 		}
-		usr.Balance += points
+
+		var nft NFT
+		err = json.Unmarshal(queryResult.Value, &nft)
+		if err != nil {
+			continue
+		}
+		nfts = append(nfts, &nft)
 	}
 
-	userJSON, err := json.Marshal(usr)
-	if err != nil {
-		return fmt.Errorf("Failed to marshal user data: %s", err)
-	}
-
-	err = ctx.GetStub().PutState(user, userJSON)
-	if err != nil {
-		return fmt.Errorf("Failed to update user balance: %s", err)
-	}
-
-	return nil
-}
-
-// PayPoints - 포인트 사용
-func (t *ABstore) PayPoints(ctx contractapi.TransactionContextInterface, user string, points int) error {
-	userBytes, err := ctx.GetStub().GetState(user)
-	if err != nil {
-		return fmt.Errorf("Failed to get user: %s", err)
-	}
-
-	if userBytes == nil {
-		return fmt.Errorf("User not found")
-	}
-
-	var usr User
-	err = json.Unmarshal(userBytes, &usr)
-	if err != nil {
-		return fmt.Errorf("Failed to unmarshal user data: %s", err)
-	}
-
-	if usr.Balance < points {
-		return fmt.Errorf("Insufficient points")
-	}
-
-	usr.Balance -= points
-
-	userJSON, err := json.Marshal(usr)
-	if err != nil {
-		return fmt.Errorf("Failed to marshal user data: %s", err)
-	}
-
-	err = ctx.GetStub().PutState(user, userJSON)
-	if err != nil {
-		return fmt.Errorf("Failed to update user balance: %s", err)
-	}
-
-	return nil
-}
-
-func (t *ABstore) CreateUser(ctx contractapi.TransactionContextInterface, userID string, name string) error {
-	user := User{
-		Name:    name,
-		Balance: 0,
-	}
-
-	userJSON, err := json.Marshal(user)
-	if err != nil {
-		return fmt.Errorf("Failed to marshal user data: %s", err)
-	}
-
-	err = ctx.GetStub().PutState(userID, userJSON)
-	if err != nil {
-		return fmt.Errorf("Failed to create user: %s", err)
-	}
-
-	return nil
-}
-
-// GetUser - 사용자 조회
-func (t *ABstore) GetUser(ctx contractapi.TransactionContextInterface, userID string) (string, error) {
-	userBytes, err := ctx.GetStub().GetState(userID)
-	if err != nil {
-		return "", fmt.Errorf("Failed to get user: %s", err)
-	}
-
-	if userBytes == nil {
-		return "", fmt.Errorf("User not found")
-	}
-
-	return string(userBytes), nil
+	return nfts, nil
 }
 
 func main() {
