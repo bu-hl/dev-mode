@@ -36,14 +36,12 @@ mongoose.connect(mongoUri)
 const userservice = require('../chain_api/service/user.service'); // ✅ 올바른 경로
 const oauthservice = require('../chain_api/service/genesis.service');
 const carservice = require('../chain_api/service/car.service');
-const carroutes = require('../chain_api/routes/car.routes');
-const walletrouter = require('../chain_api/routes/wallet.route');
+const walletrouter = require('../chain_api/service/wallet.service');
 const carListService = require('../chain_api/service/carList.service');
 
 app.use('/api/users', userservice);
 app.use('/oauth', oauthservice);
-app.use('/api/car', carservice);
-app.use('/api/car', carroutes);        // ✅ 새로 만든 car.routes.js 라우터 (겹치지 않으면 둘 다 사용 가능)
+app.use('/api/car', carservice);      // ✅ 새로 만든 car.routes.js 라우터 (겹치지 않으면 둘 다 사용 가능)
 app.use('/api/wallet', walletrouter);
 app.use('/api/carlist', carListService);
 app.use('/uploads', express.static('uploads')); // 이미지 정적 경로
