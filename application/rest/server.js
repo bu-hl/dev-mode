@@ -287,25 +287,26 @@ app.get('/admin/getAllProducts', authenticateAdmin, function (req, res) {
     sdk.send(true, 'getAllProducts', args, res);
 });
 
+//상품 등록 API
+app.post('/admin/registerProduct', authenticateAdmin, function (req, res) {
+    const { productId, productName } = req.body;
+
+    if (!productId || !productName) {
+        return res.status(400).json({ error: 'productId와 productName은 필수입니다.' });
+    }
+
+    const args = [productId, productName];
+    sdk.send(false, 'registerProduct', args, res);
+});
+
 // 상품 삭제 API
-app.post('/admin/deleteProduct', async (req, res) => {
-    const { productId } = req.body;
-
+app.get('/admin/deleteProduct', authenticateAdmin, function (req, res) {
+    const productId = req.query.productId;
     if (!productId) {
-        return res.status(400).send({ error: '상품 ID는 필수입니다.' });
+        return res.status(400).json({ error: 'productId는 필수입니다.' });
     }
-
-    try {
-        const contract = await connectToNetwork();
-
-        // 'deleteProduct' 체인코드를 호출하여 상품 삭제
-        await contract.submitTransaction('deleteProduct', productId);
-
-        res.status(200).send({ message: `상품 ID ${productId}가 성공적으로 삭제되었습니다.` });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send({ error: `상품 삭제 실패: ${err.message}` });
-    }
+    const args = [productId];
+    sdk.send(false, 'deleteProduct', args, res);
 });
 
 
