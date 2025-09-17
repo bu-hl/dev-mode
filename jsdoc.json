@@ -1,0 +1,17 @@
+{
+  "source": {
+    "include": ["application/client/loan-client/src"],
+    "includePattern": ".+\\.jsx?$",
+    "excludePattern": "(node_modules/|docs)"
+  },
+  "plugins": ["plugins/markdown"],
+  "templates": {
+    "cleverLinks": false,
+    "monospaceLinks": false
+  },
+  "opts": {
+    "destination": "./docs/frontend",
+    "recurse": true,
+    "readme": "./README.md"
+  }
+} 

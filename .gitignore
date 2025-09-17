@@ -1,17 +1,37 @@
-basic-network/bin
-application/node_modules
+# Node modules
+**/node_modules/
+
+# React build output (개발 중엔 필요 없음)
+application/loan-client/build/
+
+# Fabric wallets and generated crypto
+application/wallet/
 application/connection-org1.json
-application/wallet
-chaincode/abstore/go/go
 
-basic-network/channel-artifacts
-basic-network/organizations/ordererOrganizations
-basic-network/organizations/peerOrganizations
-basic-network/system-genesis-block
+# Chaincode build output
+chaincode/**/go/
 
-basic-network/organizations/fabric-ca/org1
-basic-network/organizations/fabric-ca/org2
-basic-network/organizations/fabric-ca/org3
+# Fabric artifacts
+basic-network/bin/
+basic-network/channel-artifacts/
+basic-network/organizations/ordererOrganizations/
+basic-network/organizations/peerOrganizations/
+basic-network/system-genesis-block/
 
-explorer/pgdata
-explorer/wallet
+# Fabric CA data
+basic-network/organizations/fabric-ca/org1/
+basic-network/organizations/fabric-ca/org2/
+basic-network/organizations/fabric-ca/org3/
+
+# Explorer artifacts
+explorer/pgdata/
+explorer/wallet/
+
+# Editor/system files
+.DS_Store
+*.log
+.env
+/home/ubuntu/go/src/dev-mode/application/rest/.env
+/home/ubuntu/go/src/dev-mode/application/client/loan-client/.env
+
+/docs
