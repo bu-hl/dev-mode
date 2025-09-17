@@ -1,0 +1,265 @@
+/* 전체 레이아웃 */
+.app-layout-container {
+    background-color: #f9fafb;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .app-layout-navlink-button {
+    background: none;
+    border: none;
+    font-size: 14px;
+    color: #4b5563;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: none;
+  }
+  
+  .app-layout-navlink-button:hover {
+    color: #6366f1;
+  }
+  
+  
+  /* ---------------- NAVBAR ---------------- */
+  
+  .app-layout-navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 32px;
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .app-layout-logo {
+    font-weight: 700;
+    font-size: 20px;
+    color: #111827;
+    cursor: pointer;
+  }
+  
+  .app-layout-nav-menu {
+    display: flex;
+    gap: 32px;
+    font-size: 14px;
+  }
+  
+  .app-layout-nav-menu a {
+    color: #4b5563;
+    text-decoration: none;
+  }
+  
+  .app-layout-nav-menu a:hover {
+    color: #6366f1;
+  }
+  
+  .app-layout-nav-buttons {
+    display: flex;
+    gap: 12px;
+  }
+  
+  .app-layout-nav-buttons button {
+    font-size: 14px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  
+  .app-layout-nav-buttons .login {
+    background-color: transparent;
+    color: #6366f1;
+    border: 1px solid #6366f1;
+  }
+  
+  .app-layout-nav-buttons .signup {
+    background-color: #6366f1;
+    color: white;
+    border: none;
+  }
+  
+  /* ---------------- FOOTER ---------------- */
+  
+  .app-layout-footer {
+    background-color: #1f2937;
+    color: #9ca3af;
+    padding: 48px 32px 24px;
+    font-family: 'Inter', sans-serif;
+    margin-top: auto;
+  }
+  
+  .app-layout-footer-top {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 32px;
+  }
+  
+  .app-layout-footer-brand {
+    flex: 1;
+  }
+  
+  .app-layout-footer-brand h4 {
+    font-size: 18px;
+    color: #ffffff;
+    margin-bottom: 12px;
+  }
+  
+  .app-layout-footer-brand p {
+    margin-bottom: 16px;
+  }
+  
+  .app-layout-footer-brand .icons {
+    display: flex;
+    gap: 16px;
+  }
+  
+  .app-layout-footer-brand .icons svg {
+    font-size: 18px;
+    cursor: pointer;
+  }
+  
+  .app-layout-footer-brand .icons svg:hover {
+    color: #ffffff;
+  }
+  
+  .app-layout-footer-column {
+    flex: 1;
+  }
+  
+  .app-layout-footer-column h5 {
+    color: #ffffff;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  
+  .app-layout-footer-column div {
+    margin-bottom: 6px;
+    cursor: pointer;
+  }
+  
+  .app-layout-footer-column div:hover {
+    color: #ffffff;
+  }
+  
+  .app-layout-footer-bottom {
+    border-top: 1px solid #374151;
+    margin-top: 32px;
+    padding-top: 24px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  
+  .app-layout-footer-bottom input {
+    background-color: #374151;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px 0 0 8px;
+    outline: none;
+  }
+  
+  .app-layout-footer-bottom button {
+    background-color: #6366f1;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 0 8px 8px 0;
+    cursor: pointer;
+  }
+  
+  /* ---------------- MODAL ---------------- */
+  
+  .app-layout-modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+  }
+  
+  .app-layout-modal-content {
+    background: white;
+    padding: 32px;
+    border-radius: 12px;
+    width: 360px;
+    max-width: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  }
+  
+  .app-layout-modal-content h2 {
+    margin-bottom: 16px;
+    font-size: 20px;
+  }
+  
+  .app-layout-modal-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .app-layout-modal-content form input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+  
+  .app-layout-modal-content form button[type="submit"] {
+    background-color: #6366f1;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  
+  .app-layout-modal-content form button[type="submit"]:hover {
+    background-color: #4f46e5;
+  }
+  
+  .app-layout-modal-content .footer-link {
+    margin-top: 12px;
+    font-size: 14px;
+    text-align: center;
+    color: #4b5563;
+    cursor: pointer;
+  }
+  
+  .app-layout-modal-content .footer-link:hover {
+    color: #6366f1;
+  }
+  
+  .app-layout-modal-content .close {
+    margin-top: 16px;
+    background: none;
+    border: none;
+    color: #6366f1;
+    cursor: pointer;
+  }
+  .app-layout-nav-buttons .username-display {
+    margin-right: 15px;
+    color: #333; /* 원하는 색상으로 변경 */
+    font-weight: bold;
+  }
+
+  .app-layout-nav-buttons .logout {
+    background-color: #dc3545; /* 로그아웃 버튼 색상 예시 */
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .app-layout-nav-buttons .logout:hover {
+    background-color: #c82333;
+  }

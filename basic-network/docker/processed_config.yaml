@@ -1,0 +1,261 @@
+networks:
+  test:
+    name: fabric_test
+services:
+  cli:
+    command: /bin/bash
+    container_name: cli
+    depends_on:
+      orderer.example.com:
+        condition: service_started
+      orderer2.example.com:
+        condition: service_started
+      peer0.org1.example.com:
+        condition: service_started
+      peer0.org2.example.com:
+        condition: service_started
+      peer1.org1.example.com:
+        condition: service_started
+      peer1.org2.example.com:
+        condition: service_started
+    environment:
+      CORE_PEER_ADDRESS: peer0.org1.example.com:7051
+      CORE_PEER_LOCALMSPID: Org1MSP
+      CORE_PEER_MSPCONFIGPATH: /opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+      CORE_PEER_TLS_ENABLED: "true"
+      CORE_PEER_TLS_ROOTCERT_FILE: /opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
+      CORE_VM_ENDPOINT: unix:///host/var/run/docker.sock
+      FABRIC_LOGGING_SPEC: INFO
+      GOPATH: /opt/gopath
+    image: hyperledger/fabric-tools:2.2.2
+    networks:
+      test: null
+    stdin_open: true
+    tty: true
+    volumes:
+    - /var/run:/host/var/run:rw
+    - /home/jihoon/go/src/dev-mode/basic-network/configtx:/opt/gopath/src/github.com/hyperledger/fabric/peer/configtx:rw
+    - /home/jihoon/go/src/dev-mode/basic-network/organizations:/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations:rw
+    - /home/jihoon/go/src/dev-mode/basic-network/scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts:rw
+    - /home/jihoon/go/src/dev-mode/basic-network/channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts:rw
+    - /home/jihoon/go/src/dev-mode/chaincode:/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode:rw
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+  orderer.example.com:
+    command: orderer
+    container_name: orderer.example.com
+    environment:
+      FABRIC_LOGGING_SPEC: INFO
+      ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE: /var/hyperledger/orderer/tls/server.crt
+      ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY: /var/hyperledger/orderer/tls/server.key
+      ORDERER_GENERAL_CLUSTER_ROOTCAS: '[/var/hyperledger/orderer/tls/ca.crt]'
+      ORDERER_GENERAL_GENESISFILE: /var/hyperledger/orderer/orderer.genesis.block
+      ORDERER_GENERAL_GENESISMETHOD: file
+      ORDERER_GENERAL_LISTENADDRESS: 0.0.0.0
+      ORDERER_GENERAL_LISTENPORT: '7050'
+      ORDERER_GENERAL_LOCALMSPDIR: /var/hyperledger/orderer/msp
+      ORDERER_GENERAL_LOCALMSPID: OrdererMSP
+      ORDERER_GENERAL_TLS_CERTIFICATE: /var/hyperledger/orderer/tls/server.crt
+      ORDERER_GENERAL_TLS_ENABLED: "true"
+      ORDERER_GENERAL_TLS_PRIVATEKEY: /var/hyperledger/orderer/tls/server.key
+      ORDERER_GENERAL_TLS_ROOTCAS: '[/var/hyperledger/orderer/tls/ca.crt]'
+      ORDERER_KAFKA_TOPIC_REPLICATIONFACTOR: '1'
+      ORDERER_KAFKA_VERBOSE: "true"
+      ORDERER_OPERATIONS_LISTENADDRESS: 0.0.0.0:17050
+    image: hyperledger/fabric-orderer:2.2.2
+    networks:
+      test: null
+    ports:
+    - published: 7050
+      target: 7050
+    - published: 17050
+      target: 17050
+    volumes:
+    - /home/jihoon/go/src/dev-mode/basic-network/system-genesis-block/genesis.block:/var/hyperledger/orderer/orderer.genesis.block:rw
+    - /home/jihoon/go/src/dev-mode/basic-network/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp:/var/hyperledger/orderer/msp:rw
+    - /home/jihoon/go/src/dev-mode/basic-network/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls:/var/hyperledger/orderer/tls:rw
+    - orderer.example.com:/var/hyperledger/production/orderer:rw
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+  orderer2.example.com:
+    command: orderer
+    container_name: orderer2.example.com
+    environment:
+      FABRIC_LOGGING_SPEC: INFO
+      ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE: /var/hyperledger/orderer/tls/server.crt
+      ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY: /var/hyperledger/orderer/tls/server.key
+      ORDERER_GENERAL_CLUSTER_ROOTCAS: '[/var/hyperledger/orderer/tls/ca.crt]'
+      ORDERER_GENERAL_GENESISFILE: /var/hyperledger/orderer/orderer.genesis.block
+      ORDERER_GENERAL_GENESISMETHOD: file
+      ORDERER_GENERAL_LISTENADDRESS: 0.0.0.0
+      ORDERER_GENERAL_LISTENPORT: '7050'
+      ORDERER_GENERAL_LOCALMSPDIR: /var/hyperledger/orderer/msp
+      ORDERER_GENERAL_LOCALMSPID: OrdererMSP
+      ORDERER_GENERAL_TLS_CERTIFICATE: /var/hyperledger/orderer/tls/server.crt
+      ORDERER_GENERAL_TLS_ENABLED: "true"
+      ORDERER_GENERAL_TLS_PRIVATEKEY: /var/hyperledger/orderer/tls/server.key
+      ORDERER_GENERAL_TLS_ROOTCAS: '[/var/hyperledger/orderer/tls/ca.crt]'
+      ORDERER_KAFKA_TOPIC_REPLICATIONFACTOR: '1'
+      ORDERER_KAFKA_VERBOSE: "true"
+      ORDERER_OPERATIONS_LISTENADDRESS: 0.0.0.0:18050
+    image: hyperledger/fabric-orderer:2.2.2
+    networks:
+      test: null
+    ports:
+    - published: 8050
+      target: 7050
+    - published: 18050
+      target: 18050
+    volumes:
+    - /home/jihoon/go/src/dev-mode/basic-network/system-genesis-block/genesis.block:/var/hyperledger/orderer/orderer.genesis.block:rw
+    - /home/jihoon/go/src/dev-mode/basic-network/organizations/ordererOrganizations/example.com/orderers/orderer2.example.com/msp:/var/hyperledger/orderer/msp:rw
+    - /home/jihoon/go/src/dev-mode/basic-network/organizations/ordererOrganizations/example.com/orderers/orderer2.example.com/tls:/var/hyperledger/orderer/tls:rw
+    - orderer2.example.com:/var/hyperledger/production/orderer:rw
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+  peer0.org1.example.com:
+    command: peer node start
+    container_name: peer0.org1.example.com
+    environment:
+      CORE_OPERATIONS_LISTENADDRESS: 0.0.0.0:17051
+      CORE_PEER_ADDRESS: peer0.org1.example.com:7051
+      CORE_PEER_CHAINCODEADDRESS: peer0.org1.example.com:7052
+      CORE_PEER_CHAINCODELISTENADDRESS: 0.0.0.0:7052
+      CORE_PEER_GOSSIP_BOOTSTRAP: peer0.org1.example.com:7051
+      CORE_PEER_GOSSIP_EXTERNALENDPOINT: peer0.org1.example.com:7051
+      CORE_PEER_ID: peer0.org1.example.com
+      CORE_PEER_LISTENADDRESS: 0.0.0.0:7051
+      CORE_PEER_LOCALMSPID: Org1MSP
+      CORE_PEER_PROFILE_ENABLED: "true"
+      CORE_PEER_TLS_CERT_FILE: /etc/hyperledger/fabric/tls/server.crt
+      CORE_PEER_TLS_ENABLED: "true"
+      CORE_PEER_TLS_KEY_FILE: /etc/hyperledger/fabric/tls/server.key
+      CORE_PEER_TLS_ROOTCERT_FILE: /etc/hyperledger/fabric/tls/ca.crt
+      CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE: fabric_test
+      CORE_VM_ENDPOINT: unix:///host/var/run/docker.sock
+      FABRIC_LOGGING_SPEC: INFO
+    image: hyperledger/fabric-peer:2.2.2
+    networks:
+      test: null
+    ports:
+    - published: 7051
+      target: 7051
+    - published: 17051
+      target: 17051
+    volumes:
+    - /var/run/docker.sock:/host/var/run/docker.sock:rw
+    - /home/jihoon/go/src/dev-mode/basic-network/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp:/etc/hyperledger/fabric/msp:rw
+    - /home/jihoon/go/src/dev-mode/basic-network/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls:/etc/hyperledger/fabric/tls:rw
+    - peer0.org1.example.com:/var/hyperledger/production:rw
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+  peer0.org2.example.com:
+    command: peer node start
+    container_name: peer0.org2.example.com
+    environment:
+      CORE_OPERATIONS_LISTENADDRESS: 0.0.0.0:19051
+      CORE_PEER_ADDRESS: peer0.org2.example.com:9051
+      CORE_PEER_CHAINCODEADDRESS: peer0.org2.example.com:9052
+      CORE_PEER_CHAINCODELISTENADDRESS: 0.0.0.0:9052
+      CORE_PEER_GOSSIP_BOOTSTRAP: peer0.org2.example.com:9051
+      CORE_PEER_GOSSIP_EXTERNALENDPOINT: peer0.org2.example.com:9051
+      CORE_PEER_ID: peer0.org2.example.com
+      CORE_PEER_LISTENADDRESS: 0.0.0.0:9051
+      CORE_PEER_LOCALMSPID: Org2MSP
+      CORE_PEER_PROFILE_ENABLED: "true"
+      CORE_PEER_TLS_CERT_FILE: /etc/hyperledger/fabric/tls/server.crt
+      CORE_PEER_TLS_ENABLED: "true"
+      CORE_PEER_TLS_KEY_FILE: /etc/hyperledger/fabric/tls/server.key
+      CORE_PEER_TLS_ROOTCERT_FILE: /etc/hyperledger/fabric/tls/ca.crt
+      CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE: fabric_test
+      CORE_VM_ENDPOINT: unix:///host/var/run/docker.sock
+      FABRIC_LOGGING_SPEC: INFO
+    image: hyperledger/fabric-peer:2.2.2
+    networks:
+      test: null
+    ports:
+    - published: 9051
+      target: 9051
+    - published: 19051
+      target: 19051
+    volumes:
+    - /var/run/docker.sock:/host/var/run/docker.sock:rw
+    - /home/jihoon/go/src/dev-mode/basic-network/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/msp:/etc/hyperledger/fabric/msp:rw
+    - /home/jihoon/go/src/dev-mode/basic-network/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls:/etc/hyperledger/fabric/tls:rw
+    - peer0.org2.example.com:/var/hyperledger/production:rw
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+  peer1.org1.example.com:
+    command: peer node start
+    container_name: peer1.org1.example.com
+    environment:
+      CORE_OPERATIONS_LISTENADDRESS: 0.0.0.0:18051
+      CORE_PEER_ADDRESS: peer1.org1.example.com:8051
+      CORE_PEER_CHAINCODEADDRESS: peer1.org1.example.com:8052
+      CORE_PEER_CHAINCODELISTENADDRESS: 0.0.0.0:8052
+      CORE_PEER_GOSSIP_BOOTSTRAP: peer0.org1.example.com:7051
+      CORE_PEER_GOSSIP_EXTERNALENDPOINT: peer1.org1.example.com:8051
+      CORE_PEER_ID: peer1.org1.example.com
+      CORE_PEER_LISTENADDRESS: 0.0.0.0:8051
+      CORE_PEER_LOCALMSPID: Org1MSP
+      CORE_PEER_PROFILE_ENABLED: "true"
+      CORE_PEER_TLS_CERT_FILE: /etc/hyperledger/fabric/tls/server.crt
+      CORE_PEER_TLS_ENABLED: "true"
+      CORE_PEER_TLS_KEY_FILE: /etc/hyperledger/fabric/tls/server.key
+      CORE_PEER_TLS_ROOTCERT_FILE: /etc/hyperledger/fabric/tls/ca.crt
+      CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE: fabric_test
+      CORE_VM_ENDPOINT: unix:///host/var/run/docker.sock
+      FABRIC_LOGGING_SPEC: INFO
+    image: hyperledger/fabric-peer:2.2.2
+    networks:
+      test: null
+    ports:
+    - published: 8051
+      target: 8051
+    - published: 18051
+      target: 18051
+    volumes:
+    - /var/run/docker.sock:/host/var/run/docker.sock:rw
+    - /home/jihoon/go/src/dev-mode/basic-network/organizations/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/msp:/etc/hyperledger/fabric/msp:rw
+    - /home/jihoon/go/src/dev-mode/basic-network/organizations/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/tls:/etc/hyperledger/fabric/tls:rw
+    - peer1.org1.example.com:/var/hyperledger/production:rw
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+  peer1.org2.example.com:
+    command: peer node start
+    container_name: peer1.org2.example.com
+    environment:
+      CORE_OPERATIONS_LISTENADDRESS: 0.0.0.0:20051
+      CORE_PEER_ADDRESS: peer1.org2.example.com:10051
+      CORE_PEER_CHAINCODEADDRESS: peer1.org2.example.com:10052
+      CORE_PEER_CHAINCODELISTENADDRESS: 0.0.0.0:10052
+      CORE_PEER_GOSSIP_BOOTSTRAP: peer0.org2.example.com:9051
+      CORE_PEER_GOSSIP_EXTERNALENDPOINT: peer1.org2.example.com:10051
+      CORE_PEER_ID: peer1.org2.example.com
+      CORE_PEER_LISTENADDRESS: 0.0.0.0:10051
+      CORE_PEER_LOCALMSPID: Org2MSP
+      CORE_PEER_PROFILE_ENABLED: "true"
+      CORE_PEER_TLS_CERT_FILE: /etc/hyperledger/fabric/tls/server.crt
+      CORE_PEER_TLS_ENABLED: "true"
+      CORE_PEER_TLS_KEY_FILE: /etc/hyperledger/fabric/tls/server.key
+      CORE_PEER_TLS_ROOTCERT_FILE: /etc/hyperledger/fabric/tls/ca.crt
+      CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE: fabric_test
+      CORE_VM_ENDPOINT: unix:///host/var/run/docker.sock
+      FABRIC_LOGGING_SPEC: INFO
+    image: hyperledger/fabric-peer:2.2.2
+    networks:
+      test: null
+    ports:
+    - published: 10051
+      target: 10051
+    - published: 20051
+      target: 20051
+    volumes:
+    - /var/run/docker.sock:/host/var/run/docker.sock:rw
+    - /home/jihoon/go/src/dev-mode/basic-network/organizations/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/msp:/etc/hyperledger/fabric/msp:rw
+    - /home/jihoon/go/src/dev-mode/basic-network/organizations/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/tls:/etc/hyperledger/fabric/tls:rw
+    - peer1.org2.example.com:/var/hyperledger/production:rw
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+version: '2'
+volumes:
+  orderer.example.com: {}
+  orderer2.example.com: {}
+  peer0.org1.example.com: {}
+  peer0.org2.example.com: {}
+  peer1.org1.example.com: {}
+  peer1.org2.example.com: {}
+

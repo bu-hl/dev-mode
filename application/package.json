@@ -9,8 +9,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/vision": "^5.1.0",
+    "connect-history-api-fallback": "^2.0.0",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "express": "^5.1.0",
     "fabric-ca-client": "^2.2.9",
-    "fabric-network": "^2.2.9"
+    "fabric-network": "^2.2.9",
+    "multer": "^2.0.0",
+    "mysql2": "^3.14.1",
+    "node-fetch": "^2.7.0",
+    "uuid": "^11.1.0"
   }
 }

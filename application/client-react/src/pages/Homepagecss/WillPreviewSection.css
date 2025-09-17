@@ -1,0 +1,159 @@
+.will-preview-section {
+  background: white;
+  padding: 120px 40px;
+}
+
+/* 제목 + 설명 중앙 정렬 */
+.preview-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.preview-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.preview-sub {
+  font-size: 16px;
+  color: #6b7280;
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+/* 본문 카드+설명 영역 */
+.preview-content {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: 80px;
+  flex-wrap: wrap;
+  text-align: left;
+}
+
+.preview-left {
+  flex: 1;
+  min-width: 360px;
+  display: flex;
+  justify-content: center;
+}
+
+.preview-right {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* 📌 카드 너비 2배 늘림 */
+.preview-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  max-width: 800px; /* ← 여기! 기존 400px → 800px */
+  width: 100%;
+  margin: 0 auto;
+}
+
+.preview-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.status-tag {
+  background-color: #ecfdf5;
+  color: #059669;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.preview-date {
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.preview-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 16px;
+}
+
+.preview-card-body {
+  background-color: #f9fafb;
+  border: 1px dashed #d1d5db;
+  border-radius: 12px;
+  height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #9ca3af;
+  font-size: 14px;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.preview-card-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.preview-tag {
+  background-color: #eef2ff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #4b5563;
+}
+
+.preview-tag .tag-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.preview-tag .tag-value {
+  font-weight: 700;
+  color: #4b5563;
+}
+
+.preview-tag .tag-value.verified {
+  color: #10b981;
+}
+
+.preview-info-block h4 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #111827;
+}
+
+.preview-info-block p {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.7;
+}

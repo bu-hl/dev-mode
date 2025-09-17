@@ -1,0 +1,160 @@
+/* RegisterPage.css */
+
+/* Global */
+body {
+  margin: 0;
+  background-color: #f5f5f5;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* Layout */
+.page-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+}
+.content {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  background-color: #fff;
+  padding: 40px 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 4px;
+  color: #333;
+  
+}
+
+/* Titles */
+.title { font-size: 24px; margin-bottom: 8px; }
+.subtitle { font-size: 14px; color: #666; margin-bottom: 24px; }
+
+/* Sections */
+.section-wrapper {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  background-color: #f5f5f5;
+  
+}
+.section-header {
+  background-color: #f2f2f2;
+  padding: 12px 16px;
+  font-weight: 500;
+  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+}
+.section-content {
+  padding: 16px;
+  background-color: #fff;
+  padding-right: 40px;
+}
+
+/* Rows */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+/* 특정 행은 절대 줄바꿈 금지 */
+.address-row,
+.phone-row,
+.mobile-row {
+  flex-wrap: nowrap;
+}
+
+/* Label */
+.label {
+  flex: 0 0 120px;
+  font-size: 14px;
+}
+.label.required::after {
+  content: ' *';
+  color: #e74c3c;
+}
+
+/* Inputs, Selects, Buttons 기본 스타일 */
+.input,
+.select {
+  flex: 1 1 0;
+  min-width: 80px;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  height: 40px;
+  box-sizing: border-box;
+}
+.select { /* 드롭다운 화살표 여백 보정 */
+  padding-right: 32px;
+}
+
+/* 일반 버튼 (주소검색 등) */
+.button {
+  flex: 0 0 auto;
+  padding: 8px 16px;
+  font-size: 14px;
+  border: 1px solid #574bff;
+  background-color: #fff;
+  color: #574bff;
+  cursor: pointer;
+  border-radius: 4px;
+  height: 40px;
+  transition: background-color .2s, color .2s;
+}
+.button:hover {
+  background-color: #574bff;
+  color: #fff;
+}
+
+/* 최종 제출 버튼 */
+.submit-button {
+  width: 100%;
+  padding: 14px 0;
+  background-color: #574bff;
+  color: #fff;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 16px;
+  transition: background-color .2s;
+}
+.submit-button:hover {
+  background-color: #4633d6;
+}
+.address-row .input,
+.address-row .button {
+  flex: 0 0 120px;  /* 원하는 너비로 같이 고정 */
+  width: 120px;     /* flex-basis 대신 width를 명시해도 OK */
+}
+
+/* RegisterPage.css 에 추가 */
+
+/* 1) 셀렉트(국번) 고정 폭 */
+.phone-row .select,
+.mobile-row .select {
+  flex: 0 0 80px;    /* 국번 드롭다운을 80px 고정 */
+  width: 80px;
+}
+
+/* 2) 번호 입력창 두 개는 남은 공간을 반반씩 나눠 채우기 */
+.phone-row .input,
+.mobile-row .input {
+  flex: 0 0 100px;   /* 각 입력창을 100px로 고정 */
+  width: 100px;
+}
+
+/* 3) gap 으로 요소 사이 간격 유지 (이미 .row 에 설정되어 있으면 생략 가능) */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;         /* 필요에 따라 조절 가능 */
+}
