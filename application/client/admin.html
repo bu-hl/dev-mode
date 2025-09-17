@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 대시보드 - 블록체인 투표 시스템</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .login-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .admin-dashboard {
+            display: none;
+        }
+
+        .section {
+            background: white;
+            margin-bottom: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 1rem 1.5rem;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .section-content {
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-info {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+        }
+
+        .btn-info:hover {
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.3);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #feca57, #ff9ff3);
+        }
+
+        .btn-warning:hover {
+            box-shadow: 0 5px 15px rgba(254, 202, 87, 0.3);
+        }
+
+        .result-box {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 1rem;
+            margin-top: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .header-content {
+                padding: 0 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>👨‍💼 관리자 대시보드</h1>
+            <a href="/" class="back-btn">← 메인으로</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 로그인 섹션 -->
+        <div class="login-section" id="loginSection">
+            <h2>🔐 관리자 인증</h2>
+            <br>
+            <div class="form-group">
+                <label for="adminPassword">관리자 비밀번호:</label>
+                <input type="password" id="adminPassword" placeholder="관리자 비밀번호를 입력하세요">
+            </div>
+            <button class="btn" onclick="login()">로그인</button>
+            <div id="loginResult" class="result-box" style="display: none;"></div>
+        </div>
+
+        <!-- 관리자 대시보드 -->
+        <div class="admin-dashboard" id="adminDashboard">
+            <!-- 투표 시스템 초기화 -->
+            <div class="section">
+                <div class="section-header">🚀 시스템 초기화</div>
+                <div class="section-content">
+                    <p>투표 시스템을 초기화합니다. (최초 1회만 실행)</p>
+                    <br>
+                    <div class="form-group">
+                        <label for="durationMinutes">투표 시간 (분):</label>
+                        <input type="number" id="durationMinutes" placeholder="투표 시간(분)">
+                    </div>
+                    <button class="btn" onclick="initSystem()">시스템 초기화</button>
+                    <div id="initResult" class="result-box" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- 후보자 등록 -->
+            <div class="section">
+                <div class="section-header">👤 후보자 등록</div>
+                <div class="section-content">
+                    <div class="form-group">
+                        <label for="candidateId">기호 번호:</label>
+                        <input type="text" id="candidateId" placeholder="후보자 기호 번호">
+                    </div>
+                    <div class="form-group">
+                        <label for="candidateName">후보자 이름:</label>
+                        <input type="text" id="candidateName" placeholder="후보자 이름">
+                    </div>
+                    <div class="form-group">
+                        <label for="partyName">정당명:</label>
+                        <input type="text" id="partyName" placeholder="소속 정당">
+                    </div>
+                    <button class="btn" onclick="registerCandidate()">후보자 등록</button>
+                    <div id="candidateResult" class="result-box" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- 투표 관리 -->
+            <div class="section">
+                <div class="section-header">🗳️ 투표 관리</div>
+                <div class="section-content">
+                    <button class="btn btn-info" onclick="getVotingStatus()">투표 현황 조회</button>
+                    <button class="btn btn-danger" onclick="endVoting()">투표 종료</button>
+                    <div id="votingResult" class="result-box" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- 투표 결과 -->
+            <div class="section">
+                <div class="section-header">📊 투표 결과</div>
+                <div class="section-content">
+                    <button class="btn btn-info" onclick="getResults()">결과 조회</button>
+                    <div id="resultsDisplay" class="result-box" style="display: none;"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let adminKey = '';
+
+        function login() {
+            const password = document.getElementById('adminPassword').value;
+            if (!password) {
+                showResult('loginResult', '비밀번호를 입력해주세요.', 'error');
+                return;
+            }
+
+            adminKey = password;
+
+            fetch('/admin/getAllCandidates', {
+                headers: { 'admin-key': adminKey }
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    throw new Error('잘못된 관리자 비밀번호입니다.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('adminDashboard').style.display = 'block';
+                showResult('loginResult', '관리자 로그인 성공!', 'success');
+            })
+            .catch(error => {
+                showResult('loginResult', error.message, 'error');
+                adminKey = '';
+            });
+        }
+
+        function initSystem() {
+            const durationMinutes = document.getElementById('durationMinutes').value;
+
+            if (!durationMinutes || isNaN(durationMinutes)) {
+                showResult('initResult', '투표 시간을 입력하세요.', 'error');
+                return;
+            }
+
+            const args = [durationMinutes];
+            fetch(`/admin/init?durationMinutes=${encodeURIComponent(durationMinutes)}`, {
+                headers: { 'admin-key': adminKey }
+            })
+            .then(response => response.json())
+            .then(data => {
+                showResult('initResult', data.message || '시스템이 초기화되었습니다.', 'success');
+            })
+            .catch(error => {
+                showResult('initResult', '초기화 실패: ' + error.message, 'error');
+            });
+        }
+
+        function showResult(elementId, message, type, isHtml = false) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            if (isHtml) {
+                element.innerHTML = message;
+            } else {
+                element.textContent = message;
+            }
+            element.className = `result-box ${type}`;
+            if (type === 'success') {
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>

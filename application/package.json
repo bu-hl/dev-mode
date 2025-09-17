@@ -1,5 +1,5 @@
 {
-  "name": "application",
+  "name": "dev-mode",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,8 +9,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "express": "^5.1.0",
     "fabric-ca-client": "^2.2.9",
-    "fabric-network": "^2.2.9"
+    "fabric-network": "^2.2.9",
+    "mysql2": "^3.14.1"
   }
 }

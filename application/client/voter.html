@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="ko">
+<!-- 투표자와 관리자 분리 -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>투표자 화면 - 블록체인 투표 시스템</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .section {
+            background: white;
+            margin-bottom: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+            padding: 1rem 1.5rem;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .section-content {
+            padding: 1.5rem;
+        }
+
+        .voting-status {
+            text-align: center;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .status-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .status-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4ecdc4;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .result-box {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 1rem;
+            margin-top: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .candidate-list {
+            margin-top: 1rem;
+        }
+
+        .candidate-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 5px;
+            border-left: 4px solid #4ecdc4;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .candidate-info {
+            flex-grow: 1;
+        }
+
+        .candidate-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .candidate-party {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .vote-button {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .vote-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(78, 205, 196, 0.3);
+        }
+
+        .vote-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 5px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #2196f3;
+        }
+
+        .warning-box {
+            background: #fff3e0;
+            border: 1px solid #ffcc80;
+            border-radius: 5px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #ff9800;
+        }
+
+        .voter-status {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        .voter-registered {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .voter-voted {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header-content {
+                padding: 0 1rem;
+            }
+
+            .status-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .candidate-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .vote-button {
+                margin-top: 0.5rem;
+                align-self: stretch;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>🗳️ 투표자 화면</h1>
+            <a href="/" class="back-btn">← 메인으로</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 투표 현황 -->
+        <div class="voting-status" id="votingStatus">
+            <h2>📊 현재 투표 현황</h2>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-number" id="totalVoters">-</div>
+                    <div>등록 유권자</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-number" id="totalVotes">-</div>
+                    <div>투표 완료</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-number" id="participationRate">-</div>
+                    <div>투표율</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-number" id="votingStatusText">-</div>
+                    <div>투표 상태</div>
+                </div>
+            </div>
+            <button class="btn btn-secondary" onclick="updateVotingStatus()" style="margin-top: 1rem;">현황 새로고침</button>
+        </div>
+
+        <!-- 유권자 등록 -->
+        <div class="section">
+            <div class="section-header">📝 유권자 등록</div>
+            <div class="section-content">
+                <div class="info-box">
+                    <strong>📋 등록 안내:</strong><br>
+                    투표에 참여하려면 먼저 유권자 등록을 해야 합니다.<br>
+                    이름과 주민등록번호 뒷 7자리를 입력해주세요.
+                </div>
+
+                <div class="form-group">
+                    <label for="voterName">이름:</label>
+                    <input type="text" id="voterName" placeholder="실명을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label for="voterRrn">주민등록번호 뒷 7자리:</label>
+                    <input type="password" id="voterRrn" placeholder="1234567" maxlength="7">
+                </div>
+                <div class="form-group">
+                    <label for="voterAddr">주소:</label>
+                    <input type="text" id="voterAddr" placeholder="예) 경기도 화성시 능동">
+                </div>
+                <button class="btn" onclick="registerVoter()">유권자 등록</button>
+                <button class="btn btn-secondary" onclick="checkVoterStatus()">등록 상태 확인</button>
+                <div id="voterRegisterResult" class="result-box" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- 투표하기 -->
+        <div class="section">
+            <div class="section-header">🗳️ 투표하기</div>
+            <div class="section-content">
+                <div class="warning-box">
+                    <strong>⚠️ 투표 주의사항:</strong><br>
+                    • 투표는 한 번만 가능합니다.<br>
+                    • 투표 후에는 변경할 수 없습니다.<br>
+                    • 신중하게 선택해주세요.
+                </div>
+
+                <button class="btn btn-secondary" onclick="loadCandidates()">후보자 목록 불러오기</button>
+
+                <div id="candidatesList" class="candidate-list" style="display: none;">
+                    <!-- 후보자 목록이 여기에 동적으로 추가됩니다 -->
+                </div>
+
+                <div id="voteResult" class="result-box" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- 투표 정보 확인 -->
+        <div class="section">
+            <div class="section-header">ℹ️ 내 투표 정보</div>
+            <div class="section-content">
+                <div class="form-group">
+                    <label for="checkName">이름:</label>
+                    <input type="text" id="checkName" placeholder="이름 입력">
+                </div>
+                <div class="form-group">
+                    <label for="checkRrn">주민등록번호 뒷 7자리:</label>
+                    <input type="password" id="checkRrn" placeholder="1234567" maxlength="7">
+                </div>
+                <button class="btn btn-secondary" onclick="checkMyVoteInfo()">내 정보 확인</button>
+                <div id="myVoteResult" class="result-box" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- 상품 구매 -->
+        <div class="section">
+            <div class="section-header">🛍️ 상품 구매</div>
+            <div class="section-content">
+                <div class="token-box">
+                    <strong>🪙 토큰 시스템:</strong><br>
+                    • 투표 완료 시 토큰 1개가 지급됩니다.<br>
+                    • 토큰으로 다양한 상품을 구매할 수 있습니다.<br>
+                    • 각 상품은 토큰 1개로 구매 가능합니다.
+                </div>
+
+                <button class="btn btn-warning" onclick="loadProducts()">상품 목록 불러오기</button>
+
+                <div id="productsList" class="product-list" style="display: none;">
+                    <!-- 상품 목록이 여기에 동적으로 추가됩니다 -->
+                </div>
+
+                <div id="purchaseResult" class="result-box" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentVotingStatus = null;
+        let candidates = [];
+
+        // 안전한 JSON 파싱 함수
+        function safeParseResponse(data) {
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            // 응답 데이터가 문자열인 경우
+            if (typeof data === 'string') {
+                return JSON.parse(data);
+            }
+            // data.result가 문자열인 경우
+            else if (data.result && typeof data.result === 'string') {
+                return JSON.parse(data.result);
+            }
+            // data.result가 객체인 경우
+            else if (data.result && typeof data.result === 'object') {
+                return data.result;
+            }
+            // data.payload가 있는 경우
+            else if (data.payload) {
+                if (typeof data.payload === 'string') {
+                    return JSON.parse(data.payload);
+                } else {
+                    return data.payload;
+                }
+            }
+            // 직접 데이터가 온 경우
+            else if (typeof data === 'object' && data.isActive !== undefined) {
+                return data;
+            }
+            else {
+                throw new Error('응답 데이터를 파싱할 수 없습니다.');
+            }
+        }
+
+        // 페이지 로드 시 투표 현황 업데이트
+        window.onload = function () {
+            updateVotingStatus();
+        };
+
+        function updateVotingStatus() {
+            fetch('/public/votingStatus')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('받은 데이터:', data); // 디버깅용
+                    console.log('데이터 타입:', typeof data); // 디버깅용
+
+                    try {
+                        const status = safeParseResponse(data);
+                        console.log('파싱된 상태:', status); // 디버깅용
+                        currentVotingStatus = status;
+
+                        // 안전한 데이터 접근 (기본값 제공)
+                        document.getElementById('totalVoters').textContent = status.totalVoters || 0;
+                        document.getElementById('totalVotes').textContent = status.totalVotes || 0;
+
+                        // participationRate 처리 (이미 %가 포함되어 있는지 확인)
+                        let participationText = '0%';
+                        if (status.participationRate !== undefined && status.participationRate !== null) {
+                            participationText = status.participationRate.toString();
+                            // 이미 %가 포함되어 있지 않으면 추가
+                            if (!participationText.includes('%')) {
+                                participationText += '%';
+                            }
+                        }
+                        document.getElementById('participationRate').textContent = participationText;
+
+                        document.getElementById('votingStatusText').textContent =
+                            status.isActive ? '진행중' : '종료';
+
+                        // 투표 상태에 따라 색상 변경
+                        const statusElement = document.getElementById('votingStatusText');
+                        statusElement.style.color = status.isActive ? '#4caf50' : '#f44336';
+
+                        console.log('투표 상태 업데이트 완료:', status);
+
+                    } catch (parseError) {
+                        console.error('JSON 파싱 오류:', parseError);
+                        console.error('원본 데이터:', data);
+                        console.error('데이터 타입:', typeof data);
+
+                        // 파싱 에러 시 기본값 표시
+                        document.getElementById('totalVoters').textContent = 'Error';
+                        document.getElementById('totalVotes').textContent = 'Error';
+                        document.getElementById('participationRate').textContent = 'Error';
+                        document.getElementById('votingStatusText').textContent = 'Error';
+                        document.getElementById('votingStatusText').style.color = '#f44336';
+                    }
+                })
+                .catch(error => {
+                    console.error('Status update error:', error);
+                    // 네트워크 에러 시 기본값 표시
+                    document.getElementById('totalVoters').textContent = 'N/A';
+                    document.getElementById('totalVotes').textContent = 'N/A';
+                    document.getElementById('participationRate').textContent = 'N/A';
+                    document.getElementById('votingStatusText').textContent = '연결 오류';
+                    document.getElementById('votingStatusText').style.color = '#f44336';
+                });
+        }
+
+        function registerVoter() {
+            const name = document.getElementById('voterName').value;
+            const rrn = document.getElementById('voterRrn').value;
+            const addr = document.getElementById('voterAddr').value;
+
+            if (!name || !rrn || !addr) {
+                showResult('voterRegisterResult', '이름과 주민등록번호 뒷 7자리 및 주소를 모두 입력해주세요.', 'error');
+                return;
+            }
+
+            if (rrn.length !== 7) {
+                showResult('voterRegisterResult', '주민등록번호 뒷 7자리를 정확히 입력해주세요.', 'error');
+                return;
+            }
+
+            fetch(`/voter/registerVoter?name=${encodeURIComponent(name)}&rrnSuffix=${encodeURIComponent(rrn)}&addr=${encodeURIComponent(addr)}`)
+                .then(response => response.json())
+                .then(data => {
+                    try {
+                        const result = safeParseResponse(data);
+                        showResult('voterRegisterResult', result.message || '유권자 등록이 완료되었습니다.', 'success');
+                        // 등록 후 현황 업데이트
+                        setTimeout(updateVotingStatus, 1000);
+                    } catch (error) {
+                        showResult('voterRegisterResult', error.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showResult('voterRegisterResult', '등록 실패: ' + error.message, 'error');
+                });
+        }
+
+        function checkVoterStatus() {
+            const name = document.getElementById('voterName').value;
+            const rrn = document.getElementById('voterRrn').value;
+
+            if (!name || !rrn) {
+                showResult('voterRegisterResult', '이름과 주민등록번호 뒷 7자리를 입력해주세요.', 'error');
+                return;
+            }
+
+            fetch(`/voter/getVoterInfo?voterName=${encodeURIComponent(name)}&rrnSuffix=${encodeURIComponent(rrn)}`)
+                .then(response => response.json())
+                .then(data => {
+                    try {
+                        const voter = safeParseResponse(data);
+                        const statusHtml = `
+                        <div class="voter-${voter.hasVoted ? 'voted' : 'registered'}">
+                            <strong>등록 상태:</strong> ${voter.hasVoted ? '투표 완료' : '등록 완료'}<br>
+                            <strong>이름:</strong> ${voter.name}<br>
+                            <strong>주소:</strong> ${voter.addr}<br>
+                            <strong>등록일:</strong> ${new Date(voter.registeredAt).toLocaleString()}<br>
+                            ${voter.hasVoted ? `<strong>투표일:</strong> ${new Date(voter.votedAt).toLocaleString()}` : ''}
+                        </div>
+                    `;
+                        showResult('voterRegisterResult', statusHtml, 'success', true);
+                    } catch (error) {
+                        showResult('voterRegisterResult', error.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showResult('voterRegisterResult', '조회 실패: ' + error.message, 'error');
+                });
+        }
+
+        function loadCandidates() {
+            if (!currentVotingStatus || !currentVotingStatus.isActive) {
+                showResult('voteResult', '투표가 진행중이 아닙니다.', 'error');
+                return;
+            }
+
+            fetch('/voter/getCandidates')
+                .then(response => response.json())
+                .then(data => {
+                    try {
+                        candidates = safeParseResponse(data);
+                        if (candidates.length === 0) {
+                            showResult('voteResult', '등록된 후보자가 없습니다.', 'error');
+                            return;
+                        }
+
+                        displayCandidates();
+                        document.getElementById('candidatesList').style.display = 'block';
+                    } catch (error) {
+                        showResult('voteResult', error.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showResult('voteResult', '후보자 목록 로드 실패: ' + error.message, 'error');
+                });
+        }
+
+        function displayCandidates() {
+            const candidatesList = document.getElementById('candidatesList');
+            let candidatesHtml = '<h3>📋 후보자 목록</h3>';
+
+            candidates.forEach(candidate => {
+                candidatesHtml += `
+                    <div class="candidate-item">
+                        <div class="candidate-info">
+                            <div class="candidate-name">${candidate.name}</div>
+                            <div class="candidate-party">${candidate.partyName} (기호번호: ${candidate.id})</div>
+                        </div>
+                        <button class="vote-button" onclick="confirmVote('${candidate.name}')">
+                            이 후보자에게 투표
+                        </button>
+                    </div>
+                `;
+            });
+
+            candidatesList.innerHTML = candidatesHtml;
+        }
+
+        function confirmVote(candidateName) {
+            if (!confirm(`정말로 '${candidateName}' 후보자에게 투표하시겠습니까?\n\n투표 후에는 변경할 수 없습니다.`)) {
+                return;
+            }
+
+            // 투표 정보 입력 요청
+            const voterName = prompt('투표자 이름을 입력하세요:');
+            if (!voterName) return;
+
+            const voterRrn = prompt('주민등록번호 뒷 7자리를 입력하세요:');
+            if (!voterRrn || voterRrn.length !== 7) {
+                alert('주민등록번호 뒷 7자리를 정확히 입력해주세요.');
+                return;
+            }
+
+            // 투표 실행
+            castVote(voterName, voterRrn, candidateName);
+        }
+
+        function castVote(voterName, voterRrn, candidateName) {
+            fetch(`/voter/vote?voterName=${encodeURIComponent(voterName)}&rrnSuffix=${encodeURIComponent(voterRrn)}&candidateName=${encodeURIComponent(candidateName)}`)
+                .then(response => response.json())
+                .then(data => {
+                    try {
+                        const result = safeParseResponse(data);
+                        showResult('voteResult', `✅ ${result.message}`, 'success');
+
+                        // 투표 후 후보자 목록 숨기기 및 현황 업데이트
+                        document.getElementById('candidatesList').style.display = 'none';
+                        setTimeout(updateVotingStatus, 1000);
+                    } catch (error) {
+                        showResult('voteResult', error.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showResult('voteResult', '투표 실패: ' + error.message, 'error');
+                });
+        }
+
+
+                function loadProducts() {
+            fetch('/voter/getAllProducts')
+                .then(response => response.json())
+                .then(data => {
+                    try {
+                        products = safeParseResponse(data);
+                        if (products.length === 0) {
+                            showResult('purchaseResult', '등록된 상품이 없습니다.', 'error');
+                            return;
+                        }
+
+                        displayProducts();
+                        document.getElementById('productsList').style.display = 'block';
+                    } catch (error) {
+                        showResult('purchaseResult', error.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showResult('purchaseResult', '상품 목록 로드 실패: ' + error.message, 'error');
+                });
+        }
+
+        function displayProducts() {
+            const productsList = document.getElementById('productsList');
+            let productsHtml = '<h3>🛍️ 구매 가능한 상품</h3>';
+
+            products.forEach(product => {
+                productsHtml += `
+                    <div class="product-item">
+                        <div class="product-info">
+                            <div class="product-name">${product.productName}</div>
+                            <div class="product-id">상품 ID: ${product.productId} | 구매 가격: 토큰 1개</div>
+                        </div>
+                        <button class="buy-button" onclick="confirmPurchase('${product.productName}')">
+                            구매하기
+                        </button>
+                    </div>
+                `;
+            });
+
+            productsList.innerHTML = productsHtml;
+        }
+
+        function confirmPurchase(productName) {
+            if (!confirm(`정말로 '${productName}' 상품을 구매하시겠습니까?\n\n토큰 1개가 차감됩니다.`)) {
+                return;
+            }
+
+            // 구매자 정보 입력 요청
+            const voterName = prompt('구매자 이름을 입력하세요:');
+            if (!voterName) return;
+
+            const voterRrn = prompt('주민등록번호 뒷 7자리를 입력하세요:');
+            if (!voterRrn || voterRrn.length !== 7) {
+                alert('주민등록번호 뒷 7자리를 정확히 입력해주세요.');
+                return;
+            }
+
+            // 구매 실행
+            purchaseProduct(productName, voterName, voterRrn);
+        }
+
+        function purchaseProduct(productName, voterName, voterRrn) {
+            fetch(`/voter/purchaseProduct?productName=${encodeURIComponent(productName)}&voterName=${encodeURIComponent(voterName)}&rrnSuffix=${encodeURIComponent(voterRrn)}`)
+                .then(response => response.json())
+                .then(data => {
+                    try {
+                        const result = safeParseResponse(data);
+                        showResult('purchaseResult', `🎉 ${result.message}`, 'success');
+                    } catch (error) {
+                        showResult('purchaseResult', error.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showResult('purchaseResult', '구매 실패: ' + error.message, 'error');
+                });
+        }
+
+        function checkMyVoteInfo() {
+            const name = document.getElementById('checkName').value;
+            const rrn = document.getElementById('checkRrn').value;
+
+            if (!name || !rrn) {
+                showResult('myVoteResult', '이름과 주민등록번호 뒷 7자리를 입력해주세요.', 'error');
+                return;
+            }
+
+            fetch(`/voter/getVoterInfo?voterName=${encodeURIComponent(name)}&rrnSuffix=${encodeURIComponent(rrn)}`)
+                .then(response => response.json())
+                .then(data => {
+                    try {
+                        const voter = safeParseResponse(data);
+                        const infoHtml = `
+                        <div class="voter-${voter.hasVoted ? 'voted' : 'registered'}">
+                            <strong>이름:</strong> ${voter.name}<br>
+                            <strong>주소:</string> ${voter.addr}<br>
+                            <strong>상품 토큰:</strong> ${voter.voterBalance}<br>
+                            <strong>등록일:</strong> ${new Date(voter.registeredAt).toLocaleString()}<br>
+                            <strong>투표 상태:</strong> ${voter.hasVoted ? '투표 완료' : '투표 대기'}<br>
+                            ${voter.hasVoted ? `<strong>투표일:</strong> ${new Date(voter.votedAt).toLocaleString()}<br>` : ''}
+                            ${voter.hasVoted ? `<strong>투표한 후보자:</strong> ${voter.votedFor || '정보 없음'}` : ''}
+                        </div>
+                    `;
+                        showResult('myVoteResult', infoHtml, 'success', true);
+                    } catch (error) {
+                        showResult('myVoteResult', error.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showResult('myVoteResult', '조회 실패: ' + error.message, 'error');
+                });
+        }
+
+        function showResult(elementId, message, type, isHtml = false) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+
+            if (isHtml) {
+                element.innerHTML = message;
+            } else {
+                element.textContent = message;
+            }
+
+            element.className = `result-box ${type}`;
+
+            // 성공 메시지는 5초 후 자동으로 숨기기
+            if (type === 'success') {
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // 자동으로 30초마다 투표 현황 업데이트
+        setInterval(updateVotingStatus, 30000);
+    </script>
+</body>
+
+</html>

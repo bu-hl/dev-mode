@@ -32,12 +32,10 @@ async function send(type, func, args, res, result){
 
             if(type){
                 result = await contract.evaluateTransaction(func, ...args);
-                res.json(result.toString());
             } else {
                 result = await contract.submitTransaction(func, ...args);
-                res.json("Success");
             }
-            
+            res.json(result.toString());
 
         } catch (error) {
             res.status(500).send({ error: `${error}`});
@@ -51,3 +49,4 @@ async function send(type, func, args, res, result){
 module.exports = {
     send:send
 }
+

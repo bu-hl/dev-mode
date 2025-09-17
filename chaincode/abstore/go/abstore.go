@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-		 http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,160 +17,200 @@ limitations under the License.
 package main
 
 import (
-	"errors"
-	"fmt"
-	"strconv"
-
-	"github.com/hyperledger/fabric-contract-api-go/contractapi"
+   "encoding/json"
+   "fmt"
+   "github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
 // ABstore Chaincode implementation
 type ABstore struct {
-	contractapi.Contract
+   contractapi.Contract
 }
 var Admin = "Admin"
 
-func (t *ABstore) Init(ctx contractapi.TransactionContextInterface, A string, Aval int, B string, Bval int) error {
-	fmt.Println("ABstore Init")
-	var err error
-	// Initialize the chaincode
-	fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)
-	// Write the state to the ledger
-	err = ctx.GetStub().PutState(A, []byte(strconv.Itoa(Aval)))
-	if err != nil {
-		return err
-	}
-
-	err = ctx.GetStub().PutState(B, []byte(strconv.Itoa(Bval)))
-	if err != nil {
-		return err
-	}
-
-	err = ctx.GetStub().PutState(Admin, []byte("0"))
-	if err != nil {
-		return err
-	}
-
-	return nil
+// 카드 내용 json화할려고 구조체 사용
+type WalletInfo struct{
+   WalletName string `json:"WalletName"`
+   Username string `json:"Username"`
+   Password string `json:"Password"`
+   Balance int `json:"Balance"`
 }
 
-// Transaction makes payment of X units from A to B
-func (t *ABstore) Invoke(ctx contractapi.TransactionContextInterface, A, B string, X int) error {
-	var err error
-	var Aval int
-	var Bval int
-	var Adminval int
-	// Get the state from the ledger
-	// TODO: will be nice to have a GetAllState call to ledger
-	Avalbytes, err := ctx.GetStub().GetState(A)
-	if err != nil {
-		return fmt.Errorf("Failed to get state")
-	}
-	if Avalbytes == nil {
-		return fmt.Errorf("Entity not found")
-	}
-	Aval, _ = strconv.Atoi(string(Avalbytes))
 
-	Bvalbytes, err := ctx.GetStub().GetState(B)
-	if err != nil {
-		return fmt.Errorf("Failed to get state")
-	}
-	if Bvalbytes == nil {
-		return fmt.Errorf("Entity not found")
-	}
-	Bval, _ = strconv.Atoi(string(Bvalbytes))
 
-	Adminvalbytes, err := ctx.GetStub().GetState(Admin)
-	if err != nil {
-		return fmt.Errorf("Failed to get state")
-	}
-	if Adminvalbytes == nil {
-		return fmt.Errorf("Entity not found")
-	}
-	Adminval, _ = strconv.Atoi(string(Adminvalbytes))
+//등록
+func (t *ABstore) Init(ctx contractapi.TransactionContextInterface, WalletName string, Username string, Password string) error{
+   var err error
+   // Initialize the chaincode
+   // Write the state to the ledger
 
-	// Perform the execution
-	Aval = Aval - X
-	Bval = Bval + ( X - X / 10 )
-	Adminval = Adminval + ( X / 10)
-	fmt.Printf("Aval = %d, Bval = %d Adminval = %d\n", Aval, Bval, Adminval)
+   //카드 객체
+   wallet := WalletInfo{
+      WalletName: WalletName,
+      Username: Username,
+      Password: Password,
+      Balance: 100,
+   }
 
-	// Write the state back to the ledger
-	err = ctx.GetStub().PutState(A, []byte(strconv.Itoa(Aval)))
-	if err != nil {
-		return err
-	}
+   //json 직렬
+   WalletJSON, err := json.Marshal(wallet)
+   if err != nil {
+      return fmt.Errorf("Failed to marshal JSON: %v", err)
+   }
 
-	err = ctx.GetStub().PutState(B, []byte(strconv.Itoa(Bval)))
-	if err != nil {
-		return err
-	}
+   err = ctx.GetStub().PutState(WalletName, WalletJSON)
+   if err != nil {
+      return err
+   }
 
-	err = ctx.GetStub().PutState(Admin, []byte(strconv.Itoa(Adminval)))
-	if err != nil {
-		return err
-	}
-
-	return nil
+   return nil
 }
 
-// Delete  an entity from state
-func (t *ABstore) Delete(ctx contractapi.TransactionContextInterface, A string) error {
+func (t *ABstore) AddBalance(ctx contractapi.TransactionContextInterface, WalletName string, amount int) error {
+   amountbytes, err := ctx.GetStub().GetState(WalletName)
+   if err != nil {
+       return fmt.Errorf("Failed to get state for %s: %v", WalletName, err)
+   }
+   if amountbytes == nil {
+       return fmt.Errorf("Wallet %s does not exist", WalletName)
+   }
 
-	// Delete the key from the state in ledger
-	err := ctx.GetStub().DelState(A)
+   var wallet WalletInfo
+   err = json.Unmarshal(amountbytes, &wallet)
+   if err != nil {
+       return fmt.Errorf("invalid wallet data format for %s: %v", WalletName, err)
+   }
+
+   wallet.Balance += amount
+   fmt.Printf("WalletBalance for %s = %d\n", WalletName, wallet.Balance)
+
+   WalletJSON, err := json.Marshal(wallet)
+   if err != nil {
+       return fmt.Errorf("Failed to marshal updated card info: %v", err)
+   }
+
+   err = ctx.GetStub().PutState(WalletName, WalletJSON)
+   if err != nil {
+       return fmt.Errorf("Failed to update card info in ledger: %v", err)
+   }
+
+   return nil
+}
+
+
+
+func (t *ABstore) ExchangeBalance(ctx contractapi.TransactionContextInterface, walletName1 string, walletName2 string, 
+   amount int ) error {
+      
+      if amount <= 0 {
+         return fmt.Errorf("0원이하는 송금할 수 없습니다")
+      }
+
+      //지갑 1 정보 조회
+      wallet1JSON, err := ctx.GetStub().GetState(walletName1)
+      if err != nil {
+         return fmt.Errorf("지갑1 정보조회에 실패! %s: %v", walletName1, err)
+      }
+      if wallet1JSON == nil {
+         return fmt.Errorf("지갑1 %s가 존재하지 않습니다", walletName1)
+      }
+
+      var wallet1 WalletInfo
+      err = json.Unmarshal(wallet1JSON, &wallet1)
+      if err != nil {
+         return fmt.Errorf("지갑1 %s 정보 조회에 실패! %v", walletName1, err)
+      }
+
+      //지갑 2 정보 조회
+      wallet2JSON, err := ctx.GetStub().GetState(walletName2)
+      if err != nil {
+         return fmt.Errorf("지갑2 정보조회에 실패! %s: %v", walletName2, err)
+      }
+      if wallet2JSON == nil {
+         return fmt.Errorf("지갑2 %s가 존재하지 않습니다", walletName2)
+      }
+      var wallet2 WalletInfo
+      err = json.Unmarshal(wallet2JSON, &wallet2)
+      if err != nil {
+         return fmt.Errorf("지갑2 %s 정보 조회에 실패! %v", walletName2, err)
+      }
+
+      //잔액 확인
+      if wallet1.Balance < amount {
+         return fmt.Errorf("지갑1 %s의 잔액이 부족합니다 (잔액: %d, 송금액: %d)", walletName1,
+          wallet1.Balance, amount)
+      }
+      if wallet2.Balance < amount {
+         return fmt.Errorf("지갑2 %s의 잔액이 부족합니다 (잔액: %d, 송금액: %d)", walletName2, 
+         wallet2.Balance, amount)
+      }
+
+      //송금액 교환
+      wallet1.Balance -= amount
+      wallet2.Balance += amount
+      
+
+      //지갑 정보 업데이트
+      wallet1JSONUpdated, err := json.Marshal(wallet1)
+      if err != nil {
+         return fmt.Errorf("지갑1 %s 정보 업데이트에 실패! %v", walletName1, err)
+      }
+
+      wallet2JSONUpdated, err := json.Marshal(wallet2)
+      if err != nil {
+         return fmt.Errorf("지갑2 %s 정보 업데이트에 실패! %v", walletName2, err)
+      }
+
+      //ledger에 업데이트
+      err = ctx.GetStub().PutState(walletName1, wallet1JSONUpdated)
+      if err != nil {
+         return fmt.Errorf("지갑1 %s 정보 업데이트에 실패! %v", walletName1, err)
+      }
+
+      err = ctx.GetStub().PutState(walletName2, wallet2JSONUpdated)
+      if err != nil {
+         return fmt.Errorf("지갑2 %s 정보 업데이트에 실패! %v", walletName2, err)
+      }
+
+      return nil
+   }
+
+   // 모든 지갑 정보 조회
+func (t *ABstore) QueryAll(ctx contractapi.TransactionContextInterface) ([]WalletInfo, error) {
+	// 모든 키-값 쌍을 조회
+	iterator, err := ctx.GetStub().GetStateByRange("", "")
 	if err != nil {
-		return fmt.Errorf("Failed to delete state")
+		return nil, fmt.Errorf("Failed to get state iterator: %v", err)
+	}
+	defer iterator.Close()
+
+	var wallets []WalletInfo
+	// iterator를 순회하며 지갑 정보 수집
+	for iterator.HasNext() {
+		response, err := iterator.Next()
+		if err != nil {
+			return nil, fmt.Errorf("Failed to iterate state: %v", err)
+		}
+
+		var wallet WalletInfo
+		err = json.Unmarshal(response.Value, &wallet)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to unmarshal wallet data for key %s: %v", response.Key, err)
+		}
+		wallets = append(wallets, wallet)
 	}
 
-	return nil
+	return wallets, nil
 }
 
-// Query callback representing the query of a chaincode
-func (t *ABstore) Query(ctx contractapi.TransactionContextInterface, A string) (string, error) {
-	var err error
-	// Get the state from the ledger
-	Avalbytes, err := ctx.GetStub().GetState(A)
-	if err != nil {
-		jsonResp := "{\"Error\":\"Failed to get state for " + A + "\"}"
-		return "", errors.New(jsonResp)
-	}
-
-	if Avalbytes == nil {
-		jsonResp := "{\"Error\":\"Nil amount for " + A + "\"}"
-		return "", errors.New(jsonResp)
-	}
-
-	jsonResp := "{\"Name\":\"" + A + "\",\"Amount\":\"" + string(Avalbytes) + "\"}"
-	fmt.Printf("Query Response:%s\n", jsonResp)
-	return string(Avalbytes), nil
-}
-
-func (t *ABstore) GetAllQuery(ctx contractapi.TransactionContextInterface) ([]string, error) {
-    resultsIterator, err := ctx.GetStub().GetStateByRange("", "")
-    if err != nil {
-        return nil, err
-    }
-    defer resultsIterator.Close()
-    var wallet []string
-    for resultsIterator.HasNext() {
-        queryResponse, err := resultsIterator.Next()
-        if err != nil {
-            return nil, err
-        }
-        jsonResp := "{\"Name\":\"" + string(queryResponse.Key) + "\",\"Amount\":\"" + string(queryResponse.Value) + "\"}"
-        wallet = append(wallet, jsonResp)
-    }
-    return wallet, nil
-}
 
 
 func main() {
-	cc, err := contractapi.NewChaincode(new(ABstore))
-	if err != nil {
-		panic(err.Error())
-	}
-	if err := cc.Start(); err != nil {
-		fmt.Printf("Error starting ABstore chaincode: %s", err)
-	}
+   cc, err := contractapi.NewChaincode(new(ABstore))
+   if err != nil {
+      panic(err.Error())
+   }
+   if err := cc.Start(); err != nil {
+      fmt.Printf("Error starting ABstore chaincode: %s", err)
+   }
 }

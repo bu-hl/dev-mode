@@ -1,6 +1,7 @@
 version: '2'
 networks:
  test:
+   name: fabric_test
 services:
  ca.org1.example.com:
    image: hyperledger/fabric-ca:1.4.9
@@ -20,4 +21,3 @@ services:
    container_name: ca.org1.example.com
    networks:
      - test
-

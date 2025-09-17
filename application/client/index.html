@@ -1,83 +1,139 @@
 <!DOCTYPE html>
-<html>
- <head>
-   <title>Hyperledger Fabric AB Store Application</title>
+<!-- 관리자 및 투표자 구분 메인 페이지 -->
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>블록체인 투표 시스템</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
-   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.min.js"></script>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-   <style type="text/css">
-      header{
-        background-color: lightgray;
-        font-size:20px;
-        padding:20px;
-      }
-      header, .form-group{
-        margin-bottom: 3%;
-      }
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 90%;
+        }
 
-      .form-group{
-        width:50%;
-      }
-      #body{
-        margin-left:3%;
-        margin-right:3%;
-      }
-      .form-control{
-        margin: 8px;
-      }
-      label{
-        font-size:20px;
-      }
-   </style>
- </head>
- <body ng-app="application" ng-controller="AppCtrl">
-    <header>
-      <div id="left_header">Hyperledger Fabric AB Store Application</div>
-    </header>
-    <div id="body">
-        <div class="form-group">
-            <label>Init</label>
-            <h5 style="color:green;margin-bottom:2%" id="success_init">{{init_ab}}</h5>
-            <br>
-            A: <input class="form-control" type="text" placeholder="Ex: Hyper" ng-model="abstore.a">
-            A Value: <input class="form-control" type="text" placeholder="Ex: 100" ng-model="abstore.aval">
-            B: <input class="form-control" type="text" placeholder="Ex: Ledger" ng-model="abstore.b">
-            B Value: <input class="form-control" type="text" placeholder="Ex: 0" ng-model="abstore.bval">
-            <input id="initAB" type="submit" value="Create" class="btn btn-primary" ng-click="initAB()">
-          </div>
-          <div class="form-group">
-            <label>Invoke</label>
-            <h5 style="color:green;margin-bottom:2%" id="success_init">{{invoke_ab}}</h5>
-            <br>
-            A: <input class="form-control" type="text" placeholder="Ex: Hyper" ng-model="abstore.a">
-            B: <input class="form-control" type="text" placeholder="Ex: Ledger" ng-model="abstore.b">
-            Value: <input class="form-control" type="text" placeholder="Ex: 0" ng-model="abstore.value">
-            <input id="invokeAB" type="submit" value="Create" class="btn btn-primary" ng-click="invokeAB()">
-          </div>
-          <div class="form-group">
-            <label>Delete</label>
-            <h5 style="color:green;margin-bottom:2%" id="success_init">{{delete_ab}}</h5>
-            <br>
-            Name: <input class="form-control" type="text" placeholder="Ex: Hyper" ng-model="abstore.a">
-            <input id="deleteAB" type="submit" value="Delete" class="btn btn-primary" ng-click="deleteAB()">
-          </div>
-      <hr>
-      <div class="form-group">
-        <h5 style="color:green;margin-bottom:2%" id="success_qurey">{{query_ab}}</h5>
-        <label>Query</label>
-        <p><input class="form-control" type="text" placeholder="Ex: A" ng-model="walletid">
-        <input id="queryAB" type="submit" value="Search" class="btn btn-primary" ng-click="queryAB()"></p>
-      </div>
-      <div class="form-group">
-        <h5 style="color:green;margin-bottom:2%" id="success_qureyAll">{{query_all}}</h5>
-        <label>Query All</label>
-        <p><input id="queryAll" type="submit" value="Search" class="btn btn-primary" ng-click="queryAll()"></p>
-      </div>
+        h1 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn-admin {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+
+        .btn-admin:hover {
+            background: linear-gradient(45deg, #ee5a52, #dd4b4a);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(238, 90, 82, 0.3);
+        }
+
+        .btn-voter {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+
+        .btn-voter:hover {
+            background: linear-gradient(45deg, #44a08d, #3d8b7a);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(68, 160, 141, 0.3);
+        }
+
+        .info {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(106, 156, 253, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #6a9cfd;
+        }
+
+        .info h3 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .info p {
+            color: #666;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 2rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗳️ 블록체인 투표 시스템</h1>
+        <p class="subtitle">안전하고 투명한 전자투표 시스템</p>
+        
+        <div class="button-group">
+            <a href="/admin" class="btn btn-admin">
+                👨‍💼 관리자 로그인
+            </a>
+            
+            <a href="/voter" class="btn btn-voter">
+                🗳️ 투표하기
+            </a>
+        </div>
+
+        <div class="info">
+            <h3>📋 시스템 안내</h3>
+            <p>
+                <strong>관리자:</strong> 투표 시스템 초기화, 후보자 등록, 투표 종료, 결과 확인<br>
+                <strong>투표자:</strong> 유권자 등록, 투표 참여, 투표 현황 확인
+            </p>
+        </div>
     </div>
-  </body>
-  <script type="text/javascript" src="app.js"> </script>
- </html>
- 
+</body>
+</html>
