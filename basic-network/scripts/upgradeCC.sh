@@ -12,8 +12,8 @@ function dev(){
   echo "체인코드 패키지화"
   cd /opt/gopath/src/github.com/hyperledger/fabric/peer
   peer lifecycle chaincode package ${1}_${2}.tar.gz \
-  --path ./chaincode/${1}/javascript/ \
-  --lang node \
+  --path ./chaincode/${1}/go/ \
+  --lang golang \
   --label "${1}_${2}"
 
   echo "Org1 peer0 체인코드 설치"
@@ -61,8 +61,8 @@ function prod(){
   echo "체인코드 패키지화"
   cd /opt/gopath/src/github.com/hyperledger/fabric/peer
   peer lifecycle chaincode package ${1}_${2}.tar.gz \
-  --path ./chaincode/${1}/javascript/ \
-  --lang node \
+  --path ./chaincode/${1}/go/ \
+  --lang golang \
   --label "${1}_${2}"
 
   echo "Org1 peer0 체인코드 설치"

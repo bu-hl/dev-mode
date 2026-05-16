@@ -12,8 +12,8 @@ function dev() {
   echo "체인코드 패키지화"
   cd /opt/gopath/src/github.com/hyperledger/fabric/peer
   peer lifecycle chaincode package $1.tar.gz \
-  --path ./chaincode/${1}/javascript/ \
-  --lang node \
+  --path ./chaincode/${1}/go/ \
+  --lang golang \
   --label ${1}_1
 
   ## Peer0 Org1 체인코드 설치
@@ -70,7 +70,7 @@ function dev() {
     --peerAddresses peer0.org1.example.com:7051 \
     --tlsRootCertFiles /opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt \
     --isInit \
-    -c '{"Args":["Init"]}' \
+    -c '{"function":"Init","Args":["Hyper","100","Ledger","0"]}' \
     --waitForEvent
 }
 
@@ -79,8 +79,8 @@ function prod() {
   echo "체인코드 패키지화"
   cd /opt/gopath/src/github.com/hyperledger/fabric/peer
   peer lifecycle chaincode package $1.tar.gz \
-  --path ./chaincode/${1}/javascript/ \
-  --lang node \
+  --path ./chaincode/${1}/go/ \
+  --lang golang \
   --label ${1}_1
 
   ## Peer0 Org1 체인코드 설치
